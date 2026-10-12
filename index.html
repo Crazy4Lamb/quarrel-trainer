@@ -93,6 +93,7 @@
   .btn:active{transform:scale(.98);}
   .btn.ghost{background:#fff; color:var(--red); border:1.5px solid var(--red); box-shadow:none;}
   .btn.sm{width:auto; display:inline-block; padding:7px 16px; font-size:13px; margin-top:0;}
+  [hidden]{display:none !important;}
   /* 战斗界面 */
   .battle-head{background:#fff; border-radius:14px; padding:12px 14px; margin-bottom:10px; border:1px solid var(--line);}
   .bh-top{display:flex; align-items:center; gap:10px;}
@@ -194,13 +195,13 @@
         <div class="big">学会吵架，不是为了惹事，<br>而是为了在被冒犯时守住边界，不再委屈自己。</div>
         <div class="sub">吵赢了是结果，不战而屈人之兵是境界。有理不在声高——边界清晰、逻辑在线、情绪稳定，才是真正的赢家。</div>
       </div>
-      <h2 class="sec">📜 五大必赢心法</h2>
-      <div id="methods"></div>
       <div class="card" style="text-align:center;">
         <div style="font-size:14px; font-weight:700;">纸上得来终觉浅</div>
-        <div class="hint">光背心法没用，去「开吵」里找个对手实战两局</div>
-        <button class="btn" onclick="go('setup')">🔥 找个对手练一局</button>
+        <div class="hint">选个对手练一局，把心法用起来</div>
+        <button class="btn" id="btn-home-start" onclick="go('setup')">🔥 开始游戏</button>
       </div>
+      <h2 class="sec">📜 五大必赢心法</h2>
+      <div id="methods"></div>
     </section>
 
     <!-- ============ 开吵·设置 ============ -->
@@ -247,6 +248,7 @@
         <div class="tk">⑤ <b>亮明边界</b> —— "这个话题我不讨论 / 你越界了"。设线，别恋战。</div>
       </div>
       <div class="chat" id="chat"></div>
+      <button class="btn ghost" id="btn-local-opponent" hidden>🧠 切换本地对手，继续练习</button>
       <div class="inputbar">
         <textarea id="reply-input" rows="2" placeholder="轮到你反击了……（试试把问题抛回去）"></textarea>
         <button class="send" id="btn-send">✊</button>
@@ -316,7 +318,8 @@
         <button class="btn" id="btn-save-settings">💾 保存配置</button>
         <button class="btn ghost" id="btn-test-settings" style="margin-top:8px;">🔌 保存并测试连接</button>
         <div id="test-result" class="hint" style="margin-top:10px;"></div>
-        <div class="hint" style="margin-top:10px; font-size:11px;">🔒 Key 只保存在你本机浏览器（localStorage），不会上传到任何服务器。部分服务商有浏览器跨域限制，如遇 Failed to fetch/CORS 报错，请换用支持浏览器直连的服务（DeepSeek / 智谱 / 月之暗面 / Anthropic 均可直连）。</div>
+        <button class="btn ghost" onclick="go('setup')">⚔️ 去开吵</button>
+        <div class="hint" style="margin-top:10px; font-size:11px;">🔒 Key 只保存在你本机浏览器（localStorage），不会上传到任何服务器。连接失败时会给出中文原因（如 401 Key 无效 / 402 余额不足 / 429 频率超限 / CORS 跨域），照着提示处理即可。部分服务商有浏览器跨域限制，如遇 Failed to fetch/CORS 报错，请换用支持浏览器直连的服务（DeepSeek / 智谱 / 月之暗面 / Anthropic 均可直连）。</div>
       </div>
     </section>
 
@@ -578,12 +581,57 @@ function toAnthropicPayload(messages){
   return { sys, msgs };
 }
 
+/* 把服务商返回的 HTTP 错误翻译成人话 */
+function httpError(res, detail){
+  const d = detail ? '：' + detail : '';
+  switch(res.status){
+    case 400: return new Error('HTTP 400 请求格式不被接受' + d + '（模型名可能写错，或该格式与服务商不匹配）');
+    case 401: return new Error('HTTP 401 API Key 无效或未授权' + d + '（检查 Key 是否复制完整、是否已过期）');
+    case 402: return new Error('HTTP 402 账户余额不足' + d + '（去服务商后台充值，或换一个有余额的 Key / 免额度服务商）');
+    case 403: return new Error('HTTP 403 无权限使用该模型' + d + '（该 Key 没有此模型权限，换个模型名或 Key）');
+    case 404: return new Error('HTTP 404 地址或模型不存在' + d + '（检查 Base URL 是否填对、模型名是否存在）');
+    case 413: return new Error('HTTP 413 请求体过大' + d);
+    case 422: return new Error('HTTP 422 参数不被接受' + d + '（检查模型名与该接口格式是否匹配）');
+    case 429: return new Error('HTTP 429 请求太频繁或额度受限' + d + '（稍等再试，或降低使用频率）');
+    default:
+      if(res.status >= 500) return new Error('HTTP ' + res.status + ' 服务商内部故障' + d + '（稍后重试，或换服务商）');
+      return new Error('HTTP ' + res.status + d);
+  }
+}
+
+function llmEndpoint(baseUrl, format){
+  const base = baseUrl.trim().replace(/\/+$/,'');
+  if(format === 'anthropic'){
+    return base.replace(/\/(?:v1\/)?messages$/i,'').replace(/\/v1$/i,'') + '/v1/messages';
+  }
+  return base.replace(/\/chat\/completions$/i,'') + '/chat/completions';
+}
+
 async function callLLM(messages, temperature, signal, maxTokens){
+  const ctrl = new AbortController();
+  const abort = ()=>ctrl.abort();
+  if(signal){
+    if(signal.aborted) abort();
+    else signal.addEventListener('abort', abort, {once:true});
+  }
+  const timer = setTimeout(abort, 15000);
+  try{
+    return await requestLLM(messages, temperature, ctrl.signal, maxTokens);
+  }catch(e){
+    if(e.name === 'AbortError') throw new Error('请求已取消或超时（最长等待 15 秒）');
+    throw e;
+  }finally{
+    clearTimeout(timer);
+    if(signal) signal.removeEventListener('abort', abort);
+  }
+}
+
+async function requestLLM(messages, temperature, signal, maxTokens){
   const s = getSettings();
   if(!s.baseUrl || !s.apiKey || !s.model) throw new Error('API 未配置');
   const fmt = s.apiFormat || 'openai';
   if(fmt === 'anthropic'){
-    const url = s.baseUrl.replace(/\/+$/,'') + '/v1/messages';
+    const url = llmEndpoint(s.baseUrl, fmt);
     const p = toAnthropicPayload(messages);
     const res = await fetch(url, {
       method:'POST', signal,
@@ -595,7 +643,7 @@ async function callLLM(messages, temperature, signal, maxTokens){
     });
     if(!res.ok){
       let detail = ''; try{ detail = (await res.text()).slice(0,120); }catch(e){}
-      throw new Error('HTTP ' + res.status + (detail ? '：' + detail : ''));
+      throw httpError(res, detail);
     }
     const data = await res.json();
     const c = data && Array.isArray(data.content)
@@ -605,7 +653,7 @@ async function callLLM(messages, temperature, signal, maxTokens){
     return c;
   }
   // OpenAI 兼容格式（绝大多数服务商与中转站）
-  const url = s.baseUrl.replace(/\/+$/,'') + '/chat/completions';
+  const url = llmEndpoint(s.baseUrl, fmt);
   const res = await fetch(url, {
     method:'POST', signal,
     headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + s.apiKey },
@@ -613,16 +661,18 @@ async function callLLM(messages, temperature, signal, maxTokens){
   });
   if(!res.ok){
     let detail = ''; try{ detail = (await res.text()).slice(0,120); }catch(e){}
-    throw new Error('HTTP ' + res.status + (detail ? '：' + detail : ''));
+    throw httpError(res, detail);
   }
   const data = await res.json();
   const c = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
   if(!c) throw new Error('返回格式异常');
+  if(!String(c).trim()) throw new Error('模型返回了空回复');
   return String(c).trim();
 }
 
 /* ---------- 视图切换 ---------- */
 function go(v){
+  if(v !== 'battle' && battle && !battle.over && battle.busy) useLocalOpponent();
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
   document.getElementById('view-'+v).classList.add('active');
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.v===v));
@@ -751,6 +801,7 @@ function pick(pool, used){
 }
 
 function startBattle(){
+  if(battle && battle.request) battle.request.abort();
   const scene = SCENES.find(s=>s.id===selScene);
   const diff = DIFFS[selDiff];
   const boundary = document.getElementById('boundary-input').value.trim();
@@ -759,8 +810,10 @@ function startBattle(){
     turn:0, used:{open:new Set(),attack:new Set(),press:new Set(),wobble:new Set(),mad:new Set(),collapse:new Set(),fallback:new Set()},
     msgs:[], scores:[], stats:{selfVerify:0, led:0, mad:0, apolo:0, tacticCount:0, boundary:0},
     bestLine:null, bestScore:-1, over:false, boundaryFirst:!!boundary,
-    chatLog:[], llmMsgs:null, busy:false
+    chatLog:[], llmMsgs:null, busy:false, request:null
   };
+  setBusy(false);
+  document.getElementById('reply-input').value = '';
   document.getElementById('b-av').textContent = scene.em;
   document.getElementById('b-nm').textContent = scene.name;
   document.getElementById('b-tp').textContent = scene.type + ' · ' + scene.intro;
@@ -777,11 +830,11 @@ function startBattle(){
     ];
     addMsg('sys', '🤖 已接入大模型对手（' + (getSettings().apiFormat==='anthropic' ? 'Anthropic · ' : 'OpenAI 兼容 · ') + escapeHtml(getSettings().model) + '），这局它来陪你吵');
   }
+  go('battle');
   if(boundary){
     addMsg('sys', '🛡️ 你启用了「提前设防」，边界声明已作为开场：');
     handleUserTurn(boundary, true);
   }
-  go('battle');
   document.getElementById('reply-input').focus();
 }
 
@@ -805,8 +858,10 @@ function addMsg(who, text, tags){
   }
   chat.appendChild(div);
   if(battle && battle.chatLog && (who==='op'||who==='me')) battle.chatLog.push({who, text});
-  chat.scrollIntoView({block:'end', behavior:'smooth'});
-  window.scrollTo(0, document.body.scrollHeight);
+  if(document.getElementById('view-battle').classList.contains('active')){
+    chat.scrollIntoView({block:'end', behavior:'smooth'});
+    window.scrollTo(0, document.body.scrollHeight);
+  }
 }
 
 /* ---- 忙碌状态（LLM 请求中禁发 + 输入中提示） ---- */
@@ -815,6 +870,7 @@ function setBusy(b){
   const btn = document.getElementById('btn-send');
   btn.disabled = b;
   btn.textContent = b ? '⏳' : '✊';
+  document.getElementById('btn-local-opponent').hidden = !b;
   const chat = document.getElementById('chat');
   const old = document.getElementById('typing-row');
   if(old) old.remove();
@@ -826,6 +882,13 @@ function setBusy(b){
     window.scrollTo(0, document.body.scrollHeight);
   }
 }
+
+function useLocalOpponent(){
+  if(!battle || !battle.llmMsgs) return;
+  battle.llmMsgs = null;
+  if(battle.request) battle.request.abort();
+}
+document.getElementById('btn-local-opponent').onclick = useLocalOpponent;
 
 /* ---- LLM 对手 prompt ---- */
 function buildOpponentSystem(collapse, ev){
@@ -861,31 +924,30 @@ ${react}
 4. 吵得真实，但不输出歧视性、越界的人身攻击。用中文。`;
 }
 
-async function llmOpponentReply(collapse, ev){
-  battle.llmMsgs[0].content = buildOpponentSystem(collapse, ev);
+async function llmOpponentReply(collapse, ev, currentBattle){
+  currentBattle.llmMsgs[0].content = buildOpponentSystem(collapse, ev);
   const ctrl = new AbortController();
-  const timer = setTimeout(()=>ctrl.abort(), 45000);
+  currentBattle.request = ctrl;
   try{
-    const out = await callLLM(battle.llmMsgs, collapse ? 0.6 : 0.95, ctrl.signal, 400);
-    if(out) battle.llmMsgs.push({ role:'assistant', content: out });
+    const out = await callLLM(currentBattle.llmMsgs, collapse ? 0.6 : 0.95, ctrl.signal, 400);
+    if(out && currentBattle.llmMsgs) currentBattle.llmMsgs.push({ role:'assistant', content: out });
     return out;
-  }catch(e){
-    if(e.name === 'AbortError') throw new Error('请求超时');
-    throw e;
-  }finally{ clearTimeout(timer); }
+  }finally{ if(currentBattle.request === ctrl) currentBattle.request = null; }
 }
 
 /* ---- 对手回合：LLM 优先，失败/未配置回落本地规则引擎 ---- */
 async function opponentTurn(ev){
   if(battle.over) return;
+  const currentBattle = battle;
   const s = battle.scene, u = battle.used;
-  const useLLM = hasLLM() && battle.llmMsgs;
+  const useLLM = !!battle.llmMsgs;
   if(battle.pressure <= battle.diff.retreat){
     let line = pick(s.collapse, u.collapse);
     if(useLLM){
       setBusy(true);
-      try{ const ll = await llmOpponentReply(true, ev); if(ll) line = ll; }
-      catch(e){ /* 保留本地认怂台词 */ }
+      try{ const ll = await llmOpponentReply(true, ev, currentBattle); if(ll && currentBattle.llmMsgs) line = ll; }
+      catch(e){ currentBattle.llmMsgs = null; }
+      if(battle !== currentBattle || currentBattle.over) return;
       setBusy(false);
     }
     addMsg('op', line);
@@ -896,8 +958,15 @@ async function opponentTurn(ev){
   let line = null;
   if(useLLM){
     setBusy(true);
-    try{ line = await llmOpponentReply(false, ev); }
-    catch(e){ addMsg('sys', '⚠️ 大模型调用失败，本回合由本地对手接手（' + e.message + '）'); }
+    try{ line = await llmOpponentReply(false, ev, currentBattle); }
+    catch(e){
+      if(battle !== currentBattle || currentBattle.over) return;
+      const switched = !currentBattle.llmMsgs;
+      currentBattle.llmMsgs = null;
+      addMsg('sys', switched ? '🧠 已切换本地对手，本局继续练习。' : '⚠️ 大模型调用失败，本局已切换本地对手（' + e.message + '）。可在设置中测试连接。');
+    }
+    if(battle !== currentBattle || currentBattle.over) return;
+    if(!currentBattle.llmMsgs) line = null;
     setBusy(false);
   }
   if(line){ addMsg('op', line); }
@@ -951,6 +1020,8 @@ document.getElementById('btn-start').onclick = startBattle;
 function finishBattle(wonEarly){
   if(battle.over) return;
   battle.over = true;
+  if(battle.request) battle.request.abort();
+  setBusy(false);
   const n = battle.scores.length;
   const avg = n ? {
     q: Math.round(battle.scores.reduce((a,s)=>a+s.q,0)/n),
@@ -1263,7 +1334,7 @@ document.getElementById('btn-save-settings').onclick = ()=>{
   if(!verified){
     msg = '⚠️ 保存失败：配置未被正确写入存储。请检查浏览器是否禁止了本地存储（隐私模式/沙箱预览环境常见）——用完整浏览器窗口打开本文件再试。';
   }else if(complete){
-    msg = '✅ 已保存并校验通过。下次开吵，对手将由大模型扮演，复盘升级为 AI 深度点评。';
+    msg = '✅ 配置已保存。保存成功不代表连接成功，建议点击「保存并测试连接」。连接异常时会自动切换本地对手，仍可开始游戏。';
   }else{
     msg = '已保存，但配置不完整（地址/Key/模型名缺一不可），当前仍使用本地对手。';
   }
