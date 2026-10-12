@@ -1,6 +1,6 @@
 # Quarrel Trainer
 
-[中文](README.md) | [English](README.en.md)
+[项目首页 / Overview](README.md) | [中文说明](README.zh-CN.md) | [English guide](README.en.md)
 
 A Chinese-language browser app for practicing responses to criticism, communication and personal boundaries. Choose an opponent and difficulty, try responses in simulated conversations, and review feedback afterward.
 
