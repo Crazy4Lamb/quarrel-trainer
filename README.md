@@ -10,16 +10,13 @@ A bilingual communication practice app with light and dark themes. Rehearse calm
 
 # 中文说明
 
-[项目首页 / Overview](README.md) | [中文说明](README.zh-CN.md) | [English guide](README.en.md)
-
-一个用于练习沟通、应对指责和表达个人边界的中英文网页应用。选择对手与难度，在模拟对话中练习回应，再通过复盘改进表达。
-
 ## 功能
 
 - 多种对手与场景、可选难度和提前设防。
 - 五大沟通心法、回应练习、评分与赛后点评。
 - 个人档案、沟通软肋分析、专属策略及应急话术。
 - 对战记录与战绩统计。
+- AI 动态开局：按对手与当前语言生成新情境、开场和提示，参考近期记录避免重复；生成失败可回退本地预置。
 - 中英文界面、场景台词与练习反馈；浅色、深色及跟随系统主题，偏好自动保存。
 - 桌面侧边导航、手机底部导航、可展开的心法示例与继续练习入口。
 - 默认本地规则引擎；可在设置中接入 OpenAI 兼容接口或 Anthropic 格式接口，启用 AI 对手及教练点评。
@@ -43,16 +40,19 @@ python -m http.server 8080
 
 ## 使用流程
 
-1. 选择对手、难度和可选的边界设定。
-2. 输入回应并完成模拟对话。
-3. 查看本局评分、金句和教练点评。
-4. 在个人档案中设置常见场景和软肋，生成针对性的练习策略。
+1. 选择界面语言、对手、难度和可选的边界设定。
+2. 点击开始：完整配置 AI 时等待本局情境生成；未配置则立即使用本地预置。等待时可手动切换本地对手。
+3. 输入回应并完成模拟对话，AI 对手会围绕本局生成的情境继续回应。
+4. 查看本局评分、金句和教练点评。
+5. 在个人档案中设置常见场景和软肋，生成针对性的练习策略。
 
 ## 外观与语言
 
 右上角「文 / A」切换中文和英文，主题图标切换明暗模式。「设置 → 外观与语言」还可选择跟随系统。英文模式包含英文对手、回应识别和复盘；历史对话与用户输入保持原文，切换时不清空当前练习或未保存的表单。
 
 ## 可选 AI 与存储
+
+完整配置 API 地址、API Key 和模型后，每次开局都会动态生成新的具体情境、对手开场和练习提示，后续对话围绕本局情境展开。生成时会参考最近几局避免重复；未配置时直接使用预置内容。生成结果格式不正确或与近期内容重复时，最多重试一次；整个开局生成阶段共用 15 秒时限。失败或超时会回退到预置场景，也可在等待时手动切换本地对手。近期 AI 开场记录仅用于减少重复；清除网站数据后这些记录也会丢失。
 
 在设置页填写接口地址、模型和 API Key。AI 请求由浏览器直接发送给你选择的服务商；对话与认证信息会用于该请求，服务商的计费和跨域策略由其决定。出现 CORS / Failed to fetch 时，检查接口是否允许当前浏览器来源。
 
@@ -62,7 +62,7 @@ python -m http.server 8080
 
 index.html 是页面入口，styles.css 管理响应式布局和两套主题，i18n.js 保存翻译及英文练习数据，app.js 包含本地规则、AI 接口、存储与界面交互。
 
-安装 Playwright 后运行 `node tests/browser.cjs` 进行浏览器回归验证（Windows 默认使用 Edge；其他环境可用 BROWSER_CHANNEL 指定已安装的 Chromium 浏览器）。测试使用模拟接口和假密钥，并更新文档截图。
+安装 Playwright 后运行 `node tests/browser.cjs` 进行浏览器回归验证，运行 `node tests/openings.cjs` 验证动态开局、重复重试、取消与预置回退（Windows 默认使用 Edge；其他环境可用 BROWSER_CHANNEL 指定已安装的 Chromium 浏览器）。测试使用模拟接口和假密钥。
 
 网页界面与 README 均支持中英文。评分来自本地启发式规则，仅供练习参考，不代表真实沟通能力。本地练习不需要 API Key，密钥不应写入源码或提交到 Git。
 
@@ -98,16 +98,13 @@ index.html 是页面入口，styles.css 管理响应式布局和两套主题，i
 
 # English Guide
 
-[项目首页 / Overview](README.md) | [中文说明](README.zh-CN.md) | [English guide](README.en.md)
-
-A Chinese/English browser app for practicing responses to criticism, communication and personal boundaries. Choose an opponent and difficulty, try responses in simulated conversations, and review feedback afterward.
-
 ## Features
 
 - Multiple opponents/scenarios, difficulty settings and optional proactive boundary setting.
 - Five communication principles, response practice, scoring and post-session feedback.
 - Personal profiles, weak-point analysis, tailored strategies and ready-to-use phrases.
 - Session history and performance statistics.
+- Fresh AI openings: a new situation, first line and tip in the selected language, with recent-opening checks and preset fallback.
 - Chinese/English interfaces, scenario dialogue and feedback; light, dark and system themes with saved preferences.
 - Desktop sidebar and mobile bottom navigation, expandable examples and session resuming.
 - A local rule engine by default; optional OpenAI-compatible or Anthropic-format APIs for AI opponents and coaching.
@@ -131,16 +128,19 @@ Open http://localhost:8080.
 
 ## Workflow
 
-1. Choose an opponent, difficulty and optional boundary settings.
-2. Type responses and complete a simulated conversation.
-3. Review scores, highlighted responses and coaching feedback.
-4. Customize your profile and recurring difficulties for targeted strategies.
+1. Choose a language, opponent, difficulty and optional boundary settings.
+2. Start the session: a complete AI configuration generates its situation first; local mode starts from presets. You may switch to a local opponent while waiting.
+3. Type responses and continue the conversation within this session’s situation.
+4. Review scores, highlighted responses and coaching feedback.
+5. Customize your profile and recurring difficulties for targeted strategies.
 
 ## Appearance and language
 
 Use the top-right language and theme buttons, or Settings → Appearance & language. The system theme responds to your device preference. English mode includes English opponents, response detection and reviews. Existing messages and user input retain their original wording; switching preserves the current session and unsaved form drafts.
 
 ## Optional AI and storage
+
+With a complete API URL, key and model configuration, each new session generates a fresh situation, opponent opening and practice tip. Subsequent replies use this session’s situation. Recent openings help avoid repetition. Without a configuration, the app loads preset content directly. Invalid or repeated output is retried at most once within a shared 15-second generation deadline. Failures and timeouts fall back to presets; you can switch to a local opponent while waiting. Recent AI opening records help reduce repetition and are removed when browser site data is cleared.
 
 Enter an endpoint, model and API key in Settings. The browser sends AI requests directly to your selected provider, including conversation content and authentication information. Provider billing and cross-origin policies apply. For CORS / Failed to fetch errors, check whether the endpoint accepts your browser origin.
 
@@ -150,7 +150,7 @@ Settings, language/theme preferences, profiles and history use browser localStor
 
 index.html is the page entry; styles.css defines responsive layouts and themes; i18n.js contains translations and English practice data; app.js handles scoring, AI, storage and interactions.
 
-With Playwright installed, run `node tests/browser.cjs` for browser regression checks (Edge on Windows by default; BROWSER_CHANNEL can select another installed Chromium channel). Tests use mocked APIs and fake keys and refresh the documentation images.
+With Playwright installed, run `node tests/browser.cjs` for browser regression checks and `node tests/openings.cjs` for fresh openings, duplicate retries, cancellation and preset fallback (Edge on Windows by default; BROWSER_CHANNEL can select another installed Chromium channel). Tests use mocked APIs and fake keys.
 
 Both the interface and documentation support Chinese and English. Scores use local heuristic rules and are practice cues, not a measure of real communication ability. Local practice does not need an API key. Keep actual keys out of source code and Git.
 

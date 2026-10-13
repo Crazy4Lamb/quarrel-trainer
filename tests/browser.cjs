@@ -167,6 +167,7 @@ const root = path.resolve(__dirname, "..");
         url: route.request().url(),
         body: route.request().postDataJSON(),
       });
+      if (fulfillGeneratedOpening(route)) return;
       return route.fulfill({
         json: {
           choices: [
@@ -214,7 +215,9 @@ const root = path.resolve(__dirname, "..");
     console.log("PASS failed AI fallback and subsequent local turns");
 
     await page.unroute("https://mock.test/**");
-    await page.route("https://mock.test/**", () => {});
+    await page.route("https://mock.test/**", (route) =>
+      fulfillGeneratedOpening(route),
+    );
     await freshBattle(page);
     await send(page, "Could you explain the issue?");
     await page.waitForFunction(
@@ -273,6 +276,7 @@ const root = path.resolve(__dirname, "..");
         url: route.request().url(),
         body: route.request().postDataJSON(),
       });
+      if (fulfillGeneratedOpening(route)) return;
       return route.fulfill({
         json: { content: [{ type: "text", text: "Let’s look at the facts." }] },
       });
@@ -291,6 +295,7 @@ const root = path.resolve(__dirname, "..");
     await page.unroute("https://mock.test/**");
     let finalReply;
     await page.route("https://mock.test/**", (route) => {
+      if (fulfillGeneratedOpening(route)) return;
       finalReply = route;
     });
     await freshBattle(page);
@@ -413,4 +418,29 @@ async function freshBattle(page) {
     await page.locator(".view.active").getAttribute("id"),
     "view-battle",
   );
+  await idle(page);
+}
+
+let generatedSession = 0;
+function fulfillGeneratedOpening(route) {
+  const body = route.request().postDataJSON();
+  const system =
+    body.system ||
+    body.messages?.find((message) => message.role === "system")?.content ||
+    "";
+  if (!system.includes("Generate a fresh session opening")) return;
+  const content = JSON.stringify({
+    intro: "A new delivery issue, session " + ++generatedSession,
+    hint: "Ask for the specific record.",
+    opening:
+      "The delivery report for session " +
+      generatedSession +
+      " needs an explanation. What happened?",
+  });
+  return route.fulfill({
+    json: {
+      choices: [{ message: { content } }],
+      content: [{ type: "text", text: content }],
+    },
+  });
 }

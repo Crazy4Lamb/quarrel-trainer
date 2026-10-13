@@ -2,6 +2,22 @@
 let language = "zh";
 let themePreference = "system";
 const UI = {
+  generatingScenario: [
+    "正在生成本局的新场景与开场…",
+    "Creating a fresh situation and opening…",
+  ],
+  openingFailed: [
+    "AI 开场生成失败，使用预置场景继续：{error}",
+    "AI opening generation failed. Continuing with a preset situation: {error}",
+  ],
+  invalidOpening: [
+    "生成的场景格式不完整",
+    "The generated situation is incomplete or invalid",
+  ],
+  repeatedOpening: [
+    "AI 返回了重复的开场",
+    "The AI returned a repeated opening",
+  ],
   skip: ["跳转到内容", "Skip to content"],
   brand: ["吵架练习器", "Boundary Lab"],
   safeSpace: ["你的沟通练习空间", "A space to practice communication"],
@@ -160,8 +176,8 @@ const UI = {
   ],
   aiTitle: ["AI 对话连接", "AI connection"],
   aiHint: [
-    "配置后启用 AI 对手；连接异常会切换本地对手。本地模式不需要密钥。",
-    "A complete configuration enables AI opponents. Connection failures fall back to local practice, which needs no key.",
+    "完整配置后，每局生成新的情境、开场与提示，并启用 AI 对手。生成或连接异常时使用预置内容；未配置时直接使用本地对手。",
+    "A complete configuration creates a fresh situation, opening and tip for each session with an AI opponent. Errors fall back to presets. Without a configuration, practice uses local content.",
   ],
   storageWarning: [
     "当前浏览器不允许本地存储。配置和偏好仅本次会话有效。",
@@ -195,7 +211,10 @@ const UI = {
   statMethods: ["沟通心法", "Practical principles"],
   statMethodsSub: ["随时可查，慢慢熟练", "Ready when you need them"],
   localMode: ["本地对手 · 无需连接", "Local opponent · No connection needed"],
-  aiMode: ["AI 对手 · {model}", "AI opponent · {model}"],
+  aiMode: [
+    "AI 对手 · 每局生成新内容 · {model}",
+    "AI opponent · Fresh content each session · {model}",
+  ],
   round: ["第 {n} / {max} 回合", "Round {n} / {max}"],
   openingBoundary: ["你的开场边界：", "Your opening boundary:"],
   aiEnabled: [

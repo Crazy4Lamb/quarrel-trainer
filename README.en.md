@@ -10,6 +10,7 @@ A Chinese/English browser app for practicing responses to criticism, communicati
 - Five communication principles, response practice, scoring and post-session feedback.
 - Personal profiles, weak-point analysis, tailored strategies and ready-to-use phrases.
 - Session history and performance statistics.
+- Fresh AI openings: a new situation, first line and tip in the selected language, with recent-opening checks and preset fallback.
 - Chinese/English interfaces, scenario dialogue and feedback; light, dark and system themes with saved preferences.
 - Desktop sidebar and mobile bottom navigation, expandable examples and session resuming.
 - A local rule engine by default; optional OpenAI-compatible or Anthropic-format APIs for AI opponents and coaching.
@@ -33,16 +34,19 @@ Open http://localhost:8080.
 
 ## Workflow
 
-1. Choose an opponent, difficulty and optional boundary settings.
-2. Type responses and complete a simulated conversation.
-3. Review scores, highlighted responses and coaching feedback.
-4. Customize your profile and recurring difficulties for targeted strategies.
+1. Choose a language, opponent, difficulty and optional boundary settings.
+2. Start the session: a complete AI configuration generates its situation first; local mode starts from presets. You may switch to a local opponent while waiting.
+3. Type responses and continue the conversation within this session’s situation.
+4. Review scores, highlighted responses and coaching feedback.
+5. Customize your profile and recurring difficulties for targeted strategies.
 
 ## Appearance and language
 
 Use the top-right language and theme buttons, or Settings → Appearance & language. The system theme responds to your device preference. English mode includes English opponents, response detection and reviews. Existing messages and user input retain their original wording; switching preserves the current session and unsaved form drafts.
 
 ## Optional AI and storage
+
+With a complete API URL, key and model configuration, each new session generates a fresh situation, opponent opening and practice tip. Subsequent replies use this session’s situation. Recent openings help avoid repetition. Without a configuration, the app loads preset content directly. Invalid or repeated output is retried at most once within a shared 15-second generation deadline. Failures and timeouts fall back to presets; you can switch to a local opponent while waiting. Recent AI opening records help reduce repetition and are removed when browser site data is cleared.
 
 Enter an endpoint, model and API key in Settings. The browser sends AI requests directly to your selected provider, including conversation content and authentication information. Provider billing and cross-origin policies apply. For CORS / Failed to fetch errors, check whether the endpoint accepts your browser origin.
 
@@ -52,7 +56,7 @@ Settings, language/theme preferences, profiles and history use browser localStor
 
 index.html is the page entry; styles.css defines responsive layouts and themes; i18n.js contains translations and English practice data; app.js handles scoring, AI, storage and interactions.
 
-With Playwright installed, run `node tests/browser.cjs` for browser regression checks (Edge on Windows by default; BROWSER_CHANNEL can select another installed Chromium channel). Tests use mocked APIs and fake keys and refresh the documentation images.
+With Playwright installed, run `node tests/browser.cjs` for browser regression checks and `node tests/openings.cjs` for fresh openings, duplicate retries, cancellation and preset fallback (Edge on Windows by default; BROWSER_CHANNEL can select another installed Chromium channel). Tests use mocked APIs and fake keys.
 
 Both the interface and documentation support Chinese and English. Scores use local heuristic rules and are practice cues, not a measure of real communication ability. Local practice does not need an API key. Keep actual keys out of source code and Git.
 

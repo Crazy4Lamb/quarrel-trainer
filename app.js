@@ -830,7 +830,7 @@ function pick(pool, used) {
   return pool[idx];
 }
 
-function startBattle() {
+async function startBattle() {
   if (
     battle &&
     !battle.over &&
@@ -882,6 +882,8 @@ function startBattle() {
     request: null,
     language,
     difficulty: selDiff,
+    initializing: false,
+    generatedScenario: null,
   };
   setBusy(false);
   document.getElementById("reply-input").value = "";
@@ -892,23 +894,175 @@ function startBattle() {
   updateHUD();
   const chat = document.getElementById("chat");
   chat.innerHTML = "";
-  addMsg("sys", scene.soft);
-  const openingLine = pick(scene.open, battle.used.open);
-  addMsg("op", openingLine);
+  go("battle");
   if (hasLLM()) {
-    battle.llmMsgs = [
-      { role: "system", content: buildOpponentSystem(false, null) },
-      { role: "assistant", content: openingLine },
-    ];
+    const currentBattle = battle;
+    const ctrl = new AbortController();
+    currentBattle.initializing = true;
+    currentBattle.request = ctrl;
+    document.getElementById("b-tp").textContent = t("generatingScenario");
+    setBusy(true);
+    try {
+      const generated = await generateOpening(
+        currentBattle,
+        boundary,
+        ctrl.signal,
+      );
+      if (battle !== currentBattle || currentBattle.over) return;
+      if (!currentBattle.initializing) throw new Error(t("localSwitched"));
+      currentBattle.generatedScenario = generated;
+      currentBattle.scene = {
+        ...SCENES.find((s) => s.id === scene.id),
+        intro: generated.intro,
+        soft: generated.hint,
+        open: [generated.opening],
+      };
+      rememberOpening(currentBattle, generated);
+      currentBattle.llmMsgs = [
+        { role: "system", content: buildOpponentSystem(false, null) },
+        { role: "assistant", content: generated.opening },
+      ];
+    } catch (e) {
+      if (battle !== currentBattle || currentBattle.over) return;
+      addMsg(
+        "sys",
+        ctrl.signal.aborted && !currentBattle.initializing
+          ? t("localSwitched")
+          : t("openingFailed", { error: e.message }),
+      );
+    } finally {
+      if (currentBattle.request === ctrl) currentBattle.request = null;
+      if (battle === currentBattle && !currentBattle.over) {
+        currentBattle.initializing = false;
+        setBusy(false);
+      }
+    }
+    if (battle !== currentBattle || currentBattle.over) return;
+  }
+  document.getElementById("b-tp").textContent =
+    battle.scene.type + " · " + battle.scene.intro;
+  addMsg("sys", battle.scene.soft);
+  const openingLine = pick(battle.scene.open, battle.used.open);
+  addMsg("op", openingLine);
+  if (battle.llmMsgs) {
     addMsg("sys", t("aiEnabled", { model: getSettings().model }));
   }
-  go("battle");
   if (boundary) {
     addMsg("sys", t("openingBoundary"));
     handleUserTurn(boundary, true);
   }
   if (matchMedia("(min-width: 601px)").matches)
     document.getElementById("reply-input").focus({ preventScroll: true });
+}
+
+function recentOpenings(sceneId) {
+  const saved = loadData().recentOpenings;
+  return (Array.isArray(saved) ? saved : [])
+    .filter(
+      (item) =>
+        item && item.sceneId === sceneId && typeof item.opening === "string",
+    )
+    .slice(-4);
+}
+
+async function generateOpening(currentBattle, boundary, signal) {
+  const previous = recentOpenings(currentBattle.scene.id);
+  const fingerprint = (line) =>
+    line.toLowerCase().replace(/[\s\p{P}\p{S}]/gu, "");
+  const sessionId =
+    globalThis.crypto?.randomUUID?.() || Date.now() + "-" + Math.random();
+  const messages = [
+    {
+      role: "system",
+      content: `Generate a fresh session opening for a communication practice game.
+Return ONLY a JSON object with three string fields: "intro" (a concrete new situation), "hint" (one practical communication tip for the learner), and "opening" (the opponent's first spoken line, 1–2 sentences).
+Keep the chosen opponent's identity and style, but vary the specific incident, stakes, details, and wording. Do not copy the reference situation or repeat a previous opening. Use realistic disagreement without slurs or extreme threats.
+Write all three fields in ${currentBattle.language === "en" ? "English" : "Simplified Chinese"}. Keep intro and hint under 70 words each and opening under 50 words. No Markdown, narration in the opening, or extra fields.`,
+    },
+    {
+      role: "user",
+      content: JSON.stringify({
+        sessionId,
+        opponent: currentBattle.scene.name,
+        style: currentBattle.scene.type,
+        referenceSituation: currentBattle.scene.intro,
+        difficulty: currentBattle.diff.name,
+        openingBoundary: boundary || undefined,
+        avoidRepeating: previous.map(({ intro, opening }) => ({
+          intro,
+          opening,
+        })),
+      }),
+    },
+  ];
+  // Bound the entire generation phase, including a single retry for malformed/repeated output.
+  const ctrl = new AbortController();
+  const abort = () => ctrl.abort();
+  if (signal.aborted) abort();
+  else signal.addEventListener("abort", abort, { once: true });
+  const timer = setTimeout(abort, 15000);
+  try {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const output = await callLLM(messages, 0.95, ctrl.signal, 700);
+      try {
+        const data = JSON.parse(
+          output
+            .trim()
+            .replace(/^```(?:json)?\s*/i, "")
+            .replace(/\s*```$/, ""),
+        );
+        if (
+          !data ||
+          !["intro", "hint", "opening"].every(
+            (key) =>
+              typeof data[key] === "string" &&
+              data[key].trim() &&
+              data[key].length <= 1000,
+          )
+        )
+          throw new Error(t("invalidOpening"));
+        const opening = data.opening.trim();
+        if (
+          previous.some(
+            (item) => fingerprint(item.opening) === fingerprint(opening),
+          ) ||
+          currentBattle.scene.open.some(
+            (line) => fingerprint(line) === fingerprint(opening),
+          )
+        ) {
+          throw new Error(t("repeatedOpening"));
+        }
+        return { intro: data.intro.trim(), hint: data.hint.trim(), opening };
+      } catch (e) {
+        if (attempt || ctrl.signal.aborted) throw e;
+        messages.push(
+          { role: "assistant", content: output },
+          {
+            role: "user",
+            content:
+              "The output was invalid or repeated a previous opening. Generate a different situation and opening, using exactly the JSON schema above.",
+          },
+        );
+      }
+    }
+  } finally {
+    clearTimeout(timer);
+    signal.removeEventListener("abort", abort);
+  }
+}
+
+function rememberOpening(currentBattle, generated) {
+  const data = loadData();
+  const saved = Array.isArray(data.recentOpenings) ? data.recentOpenings : [];
+  data.recentOpenings = [
+    ...saved,
+    {
+      sceneId: currentBattle.scene.id,
+      language: currentBattle.language,
+      ...generated,
+    },
+  ].slice(-20);
+  saveData(data);
 }
 
 function updateHUD() {
@@ -959,6 +1113,7 @@ function setBusy(b) {
   btn.textContent = b ? "…" : "↑";
   btn.setAttribute("aria-label", t("send"));
   btn.setAttribute("aria-busy", b);
+  document.getElementById("reply-input").disabled = b && battle.initializing;
   document.getElementById("btn-local-opponent").hidden = !b;
   const chat = document.getElementById("chat");
   const old = document.getElementById("typing-row");
@@ -967,13 +1122,18 @@ function setBusy(b) {
     const tp = document.createElement("div");
     tp.id = "typing-row";
     tp.className = "msg op";
-    tp.innerHTML = `<div class="face">${battle.scene.em}</div><div class="body"><div class="bubble" style="color:var(--ink2)">${t("typing")}</div></div>`;
+    tp.innerHTML = `<div class="face">${battle.scene.em}</div><div class="body"><div class="bubble" style="color:var(--ink2)">${t(battle.initializing ? "generatingScenario" : "typing")}</div></div>`;
     chat.appendChild(tp);
     window.scrollTo(0, document.body.scrollHeight);
   }
 }
 
 function useLocalOpponent() {
+  if (battle?.initializing) {
+    battle.initializing = false;
+    battle.request?.abort();
+    return;
+  }
   if (!battle || !battle.llmMsgs) return;
   battle.llmMsgs = null;
   if (battle.request) battle.request.abort();
@@ -1789,17 +1949,29 @@ function applyLanguage() {
   if (document.getElementById("profile-feedback").textContent)
     document.getElementById("profile-feedback").textContent = t("profileSaved");
   if (document.getElementById("typing-row"))
-    document.querySelector("#typing-row .bubble").textContent = t("typing");
+    document.querySelector("#typing-row .bubble").textContent = t(
+      battle?.initializing ? "generatingScenario" : "typing",
+    );
   renderMethods();
   renderHomeStats();
   renderSetup();
   applyTheme();
   if (battle) {
-    battle.scene = SCENES.find((s) => s.id === battle.scene.id);
+    battle.scene = {
+      ...SCENES.find((s) => s.id === battle.scene.id),
+      ...(battle.generatedScenario
+        ? {
+            intro: battle.generatedScenario.intro,
+            soft: battle.generatedScenario.hint,
+            open: [battle.generatedScenario.opening],
+          }
+        : {}),
+    };
     battle.language = language;
     document.getElementById("b-nm").textContent = battle.scene.name;
-    document.getElementById("b-tp").textContent =
-      battle.scene.type + " · " + battle.scene.intro;
+    document.getElementById("b-tp").textContent = battle.initializing
+      ? t("generatingScenario")
+      : battle.scene.type + " · " + battle.scene.intro;
     updateHUD();
   }
 }
