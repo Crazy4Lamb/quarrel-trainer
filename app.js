@@ -1346,18 +1346,25 @@ function handleUserTurn(text, isBoundary) {
   opponentTurn(ev);
 }
 
-document.getElementById("btn-send").onclick = () => {
-  if (battle && battle.busy) return;
-  const inp = document.getElementById("reply-input");
-  const text = inp.value.trim();
+const replyInput = document.getElementById("reply-input");
+const sendButton = document.getElementById("btn-send");
+sendButton.addEventListener("pointerdown", (event) => {
+  // Keep the keyboard and composer in place until the click is released.
+  // Submission stays on click so dragging away or cancelling a tap cannot send.
+  if (event.button === 0 && document.activeElement === replyInput)
+    event.preventDefault();
+});
+sendButton.onclick = () => {
+  if (!battle || battle.over || battle.busy) return;
+  const text = replyInput.value.trim();
   if (!text) return;
-  inp.value = "";
+  replyInput.value = "";
   handleUserTurn(text, false);
 };
-document.getElementById("reply-input").addEventListener("keydown", (e) => {
+replyInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey && !e.isComposing && e.keyCode !== 229) {
     e.preventDefault();
-    document.getElementById("btn-send").click();
+    sendButton.click();
   }
 });
 document.getElementById("btn-end").onclick = () => finishBattle(false);
