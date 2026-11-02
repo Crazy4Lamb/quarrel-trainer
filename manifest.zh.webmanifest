@@ -1,0 +1,27 @@
+{
+  "id": "./",
+  "name": "吵架练习器 · 虚构搭档，开心过招",
+  "short_name": "吵架练习器",
+  "description": "中英文虚构娱乐对练，支持离线预置与可选 AI，安装到主屏幕即可打开。",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f8fc",
+  "theme_color": "#6860d8",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

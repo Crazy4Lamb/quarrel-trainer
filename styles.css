@@ -2545,6 +2545,113 @@ details[open] > .customize-heading .customize-toggle::after {
     scroll-margin-top: 145px;
   }
 }
+.pwa-home-install {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--red-deep);
+}
+.pwa-settings {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.pwa-settings .sec {
+  font-size: 14px;
+}
+.pwa-dialog {
+  margin: auto;
+  width: min(440px, calc(100% - 36px));
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+  color: var(--ink);
+  padding: 25px;
+  box-shadow: 0 20px 80px #0004;
+}
+.pwa-dialog::backdrop {
+  background: #10122480;
+}
+.pwa-dialog h2 {
+  font-size: 19px;
+  margin-bottom: 14px;
+}
+.pwa-dialog p {
+  font-size: 13px;
+  line-height: 1.9;
+  color: var(--ink2);
+  white-space: pre-line;
+}
+.pwa-dialog .btn {
+  font-size: 13px;
+  text-decoration: none;
+}
+.pwa-update {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 70;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  width: min(560px, calc(100% - 36px));
+  background: var(--card);
+  color: var(--ink);
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 7px 35px #0002;
+}
+.pwa-update strong {
+  font-size: 13px;
+}
+.pwa-update .hint {
+  font-size: 10px;
+  margin-bottom: 0;
+}
+.pwa-update .btn {
+  flex-shrink: 0;
+  font-size: 11px;
+}
+@media (max-width: 600px) {
+  .app-header {
+    padding-top: env(safe-area-inset-top);
+    padding-left: max(18px, env(safe-area-inset-left));
+    padding-right: max(18px, env(safe-area-inset-right));
+    height: calc(76px + env(safe-area-inset-top));
+  }
+  main {
+    padding-left: max(18px, env(safe-area-inset-left));
+    padding-right: max(18px, env(safe-area-inset-right));
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+  .battle-composer {
+    bottom: calc(70px + env(safe-area-inset-bottom));
+  }
+  .inputbar textarea {
+    font-size: 16px !important;
+  }
+  .pwa-update {
+    bottom: calc(82px + env(safe-area-inset-bottom));
+    gap: 12px;
+    padding: 14px;
+  }
+  .pwa-dialog {
+    padding: 22px;
+  }
+  html[data-keyboard-open="true"] nav {
+    display: none;
+  }
+  html[data-keyboard-open="true"] .battle-composer {
+    bottom: var(--keyboard-offset, 0px);
+  }
+  html[data-keyboard-open="true"] .setup-launch {
+    position: static;
+  }
+  html[data-keyboard-open="true"] main {
+    padding-bottom: 30px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

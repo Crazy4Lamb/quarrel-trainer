@@ -7,6 +7,8 @@ const root = path.resolve(__dirname, "..");
 const outputDirectory = path.join(root, "dist");
 const htmlFilename = "quarrel-trainer-local.html";
 const zipFilename = "quarrel-trainer-local.zip";
+const readText = (filename) =>
+  fs.readFileSync(path.join(root, filename), "utf8").replace(/\r\n/g, "\n");
 
 function replaceOnce(source, pattern, replacement, label) {
   const matches = source.match(new RegExp(pattern.source, "g"));
@@ -18,16 +20,21 @@ function replaceOnce(source, pattern, replacement, label) {
 }
 
 function buildHtml() {
-  let html = fs.readFileSync(path.join(root, "index.html"), "utf8");
-  const css = fs.readFileSync(path.join(root, "styles.css"), "utf8");
+  let html = readText("index.html");
+  // A local file cannot be installed as a PWA; keep its single-file behavior.
+  html = html.replace(
+    /<link\b[^>]*rel=["'](?:manifest|icon|apple-touch-icon)["'][^>]*>/g,
+    "",
+  );
+  const css = readText("styles.css");
   html = replaceOnce(
     html,
     /<link\b[^>]*href=["']styles\.css["'][^>]*>/,
     `<style>\n${css.replace(/<\/style/gi, "<\\/style")}\n</style>`,
     "stylesheet reference",
   );
-  for (const filename of ["i18n.js", "skills.js", "app.js"]) {
-    const script = fs.readFileSync(path.join(root, filename), "utf8");
+  for (const filename of ["i18n.js", "skills.js", "pwa.js", "app.js"]) {
+    const script = readText(filename);
     html = replaceOnce(
       html,
       new RegExp(
@@ -160,7 +167,7 @@ function build() {
       ["quarrel-trainer-local/Readme.txt", "\ufeff" + instructions],
       [
         "quarrel-trainer-local/Example-skill.json",
-        fs.readFileSync(path.join(root, "skills", "reviewer.json"), "utf8"),
+        readText("skills/reviewer.json"),
       ],
     ]),
   );
@@ -176,4 +183,4 @@ if (require.main === module) {
     console.log(`${kind}: ${filename} (${fs.statSync(filename).size} bytes)`);
   }
 }
-module.exports = { build };
+module.exports = { build, createZip };

@@ -2,6 +2,63 @@
 let language = "zh";
 let themePreference = "system";
 const UI = {
+  pwaInstall: ["安装到主屏幕 ↗", "Install to home screen ↗"],
+  pwaTitle: ["手机安装与离线", "Install & offline access"],
+  pwaOfflineNote: [
+    "首次联网打开并完成缓存后，内置玩法可离线用。AI 仍需联网。",
+    "After your first online visit finishes caching, preset play works offline. AI still needs a connection.",
+  ],
+  pwaFileStatus: [
+    "这是本地文件版。手机安装请打开 HTTPS 网页版。",
+    "This is a local file. Open the HTTPS web edition to install it on a phone.",
+  ],
+  pwaCacheFailed: [
+    "离线缓存暂时未就绪，请联网刷新重试。",
+    "Offline content isn’t ready. Connect and reload to try again.",
+  ],
+  pwaOfflineReady: [
+    "内置内容已缓存，可以离线练习。",
+    "Preset content is ready for offline play.",
+  ],
+  pwaPreparing: ["正在准备离线内容…", "Preparing offline content…"],
+  pwaInstallTitle: ["把它放到手机桌面", "Add it to your home screen"],
+  pwaClose: ["知道了", "Got it"],
+  pwaOpenOnline: ["打开手机网页版 ↗", "Open the web edition ↗"],
+  pwaInstalled: ["已安装到主屏幕", "Added to your home screen"],
+  pwaInstalledHelp: [
+    "主屏幕版已就绪。下次点击手机桌面的图标即可打开。",
+    "Your installed version is ready. Open its home-screen icon next time.",
+  ],
+  pwaFileHelp: [
+    "本地 HTML 文件可以离线使用，但不能从文件直接安装。请用手机浏览器打开网页版，再按引导添加到主屏幕。",
+    "Local HTML files work offline but cannot be installed directly. Open the web edition in your phone’s browser, then follow its install instructions.",
+  ],
+  pwaEmbeddedHelp: [
+    "请先用浏览器菜单选择「在 Safari / Chrome / Edge 中打开」，再安装到主屏幕。聊天软件内置浏览器可能没有安装功能。",
+    "Open this page in Safari, Chrome or Edge first. In-app browsers may not offer home-screen installation.",
+  ],
+  pwaIOSHelp: [
+    "在 Safari 中打开本页，点「分享」，再选「添加到主屏幕」。如果出现「作为网页 App 打开」，请保持开启，然后点「添加」。",
+    "In Safari, open Share, then Add to Home Screen. If you see Open as Web App, keep it on, then tap Add.",
+  ],
+  pwaAndroidHelp: [
+    "在 Chrome / Edge 中打开本页，通过浏览器菜单选择「安装应用」或「添加到主屏幕」。部分浏览器需要先浏览一会儿才显示安装选项。",
+    "Open this page in Chrome or Edge. In the browser menu, choose Install app or Add to home screen. The option may appear after you’ve used the page briefly.",
+  ],
+  pwaDesktopHelp: [
+    "使用浏览器地址栏或菜单里的「安装应用」。手机上可用 Chrome / Edge 的安装选项，或 Safari 的「分享 → 添加到主屏幕」。",
+    "Use Install app in your browser’s address bar or menu. On phones, use Chrome/Edge’s install option or Safari’s Share → Add to Home Screen.",
+  ],
+  pwaUpdateReady: ["新版本已准备好", "An update is ready"],
+  pwaUpdate: ["刷新更新", "Reload to update"],
+  pwaUpdateNote: [
+    "由你决定何时刷新，设置和已完成的记录会保留。",
+    "Reload when you’re ready. Saved settings and completed sessions stay on this device.",
+  ],
+  pwaFinishRound: [
+    "请先结束并保存当前练习，再点更新，避免丢失本局内容。",
+    "Finish and save this session before updating so you keep your progress.",
+  ],
   statSessionsValue: ["{n} 局", "{n} {unit}"],
   statScenariosValue: ["{n} 个场景", "{n} scenarios"],
   statMethodsValue: ["{n} 个心法", "{n} techniques"],

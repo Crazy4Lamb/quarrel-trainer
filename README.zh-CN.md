@@ -21,6 +21,20 @@
 
 ## 快速开始
 
+### 手机 H5：打开网页，安装到主屏幕
+
+[打开手机网页版](https://crazy4lamb.github.io/quarrel-trainer/) · [下载 H5 部署包](https://github.com/Crazy4Lamb/quarrel-trainer/raw/refs/heads/main/downloads/quarrel-trainer-h5.zip)
+
+这是可安装的 H5（PWA），无需 APK 或应用商店。Android 在 Chrome / Edge 中打开后，点页面「安装到主屏幕」，或使用浏览器菜单里的「安装应用 / 添加到主屏幕」。iPhone 用 Safari 打开，点「分享 → 添加到主屏幕」；如果有「作为网页 App 打开」选项，请保持开启。内置浏览器没有安装选项时，先在系统浏览器打开。
+
+首次联网打开并完成缓存后，内置练习可以离线重开；AI 对话仍需联网与完整 API 配置。设置里会显示离线内容是否就绪。安装需要 HTTPS（开发时 localhost 也可），直接打开本地 HTML 或手机访问普通局域网 HTTP 地址不能安装。安装入口会提供对应平台的说明。
+
+网站有新版本时会显示更新按钮，由使用者决定何时刷新；正在进行的练习会先要求结束并保存。本地文件版与网页版使用不同的浏览器存储空间，记录和 API 配置不会自动互通。
+
+部署到自己的 HTTPS 静态网站：运行 `node scripts/build-h5.cjs`，把 `dist/h5/` 的内容上传，保持目录结构。`manifest*.webmanifest`、`service-worker.js` 与 `icons/` 必须一起部署。项目子目录部署也支持。
+
+安装要求与浏览器差异可参考 [MDN 的 PWA 安装说明](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable)。
+
 ### 本地便携版：下载、解压、双击
 
 [下载本地版 ZIP](https://github.com/Crazy4Lamb/quarrel-trainer/raw/refs/heads/main/downloads/quarrel-trainer-local.zip)
@@ -37,6 +51,8 @@
 node scripts/build-local.cjs
 ```
 
+同时生成 H5 和本地版并刷新离线缓存版本：`node scripts/build.cjs`。修改网页后，发布前运行此命令，再提交更新的 `service-worker.js` 和 `downloads/`，让已安装用户能收到新版提示。
+
 构建时还会同步更新仓库 `downloads/` 中的 ZIP，提交该文件即可保持 GitHub 下载入口与源码一致。
 
 生成 `dist/quarrel-trainer-local.zip`（包含「Start.html」「Readme.txt」和「Example-skill.json」）及 `dist/quarrel-trainer-local.html`（独立单文件）。将 ZIP 或 HTML 直接发给使用者即可。打包仅包含应用代码，不包含浏览器里保存的 API Key、档案或记录。
@@ -48,7 +64,7 @@ git clone https://github.com/Crazy4Lamb/quarrel-trainer.git
 cd quarrel-trainer
 ```
 
-用完整浏览器窗口打开 index.html 即可使用本地规则模式，无需构建、npm 依赖或后端服务。请保留同目录下的 styles.css、i18n.js、skills.js 和 app.js。
+用完整浏览器窗口打开 index.html 即可使用本地规则模式，无需构建、npm 依赖或后端服务。请保留全部样式、脚本、manifest、service-worker.js 和 icons/ 目录。
 
 也可通过静态服务器访问，例如已安装 Python 时：
 
@@ -96,7 +112,7 @@ python -m http.server 8080
 
 ## 项目结构与开发
 
-index.html 是页面入口，styles.css 管理布局与主题，i18n.js 保存中英文界面与练习数据，skills.js 管理原创虚构角色、风格技能和生成约束，app.js 管理对练、AI 和存储。
+index.html 是页面入口，styles.css 管理布局与主题，i18n.js 保存中英文界面与练习数据，skills.js 管理原创虚构角色、风格技能和生成约束，app.js 管理对练、AI 和存储。pwa.js 提供安装与离线状态，manifest*.webmanifest 与 icons/ 提供主屏幕信息。service-worker.js 由 scripts/build-h5.cjs 生成，请修改 scripts/service-worker-template.js 后重新构建。
 
 安装 Playwright 后运行 `node tests/browser.cjs` 进行浏览器回归验证，运行 `node tests/openings.cjs` 验证动态开局、重复重试、取消与预置回退（Windows 默认使用 Edge；其他环境可用 BROWSER_CHANNEL 指定已安装的 Chromium 浏览器）。测试使用模拟接口和假密钥。
 
@@ -137,3 +153,5 @@ index.html 是页面入口，styles.css 管理布局与主题，i18n.js 保存�
 运行 `node tests/international.cjs` 验证浏览器语言默认值、双语角色选择、生成约束、响应式布局和英文离线单文件。
 
 运行 `node tests/setup.cjs` 验证首页计数含义、默认页面收起自定义、直接开局、选择摘要、各尺寸可见的开始按钮，以及本地包中的同一流程。
+
+运行 `node tests/pwa.cjs` 验证真实 Service Worker 的子目录作用域、断网重载与对练、更新时保留记录、API 请求不缓存、安装入口与手机键盘布局。Safari 的添加入口按平台规则提供引导；测试不代表在实体 iPhone 上完成过安装验收。

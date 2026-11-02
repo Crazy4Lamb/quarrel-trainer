@@ -1,0 +1,60 @@
+/* Generated from this template by scripts/build-h5.cjs. Cache static assets only. */
+const BUILD_ID = "__BUILD_ID__";
+const SHELL = __SHELL_FILES__;
+const CACHE_PREFIX =
+  "boundary-lab:" + new URL(self.registration.scope).pathname + ":";
+const CACHE_NAME = CACHE_PREFIX + BUILD_ID;
+const resolve = (path) => new URL(path, self.registration.scope).href;
+const allowed = new Set(SHELL.map((path) => new URL(resolve(path)).pathname));
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) =>
+      cache.addAll(
+        SHELL.map((file) => new Request(resolve(file), { cache: "reload" })),
+      ),
+    ),
+  );
+});
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    (async () => {
+      for (const key of await caches.keys()) {
+        if (key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+          await caches.delete(key);
+      }
+      await self.clients.claim();
+    })(),
+  );
+});
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
+});
+self.addEventListener("fetch", (event) => {
+  const request = event.request,
+    url = new URL(request.url);
+  if (request.method !== "GET" || url.origin !== self.location.origin) return;
+  if (
+    request.mode === "navigate" &&
+    url.href.startsWith(self.registration.scope)
+  ) {
+    event.respondWith(
+      caches
+        .open(CACHE_NAME)
+        .then(
+          async (cache) =>
+            (await cache.match(resolve("index.html"))) || fetch(request),
+        ),
+    );
+    return;
+  }
+  if (allowed.has(url.pathname))
+    event.respondWith(
+      caches
+        .open(CACHE_NAME)
+        .then(
+          async (cache) =>
+            (await cache.match(request, { ignoreSearch: true })) ||
+            fetch(request),
+        ),
+    );
+});

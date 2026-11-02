@@ -2022,6 +2022,7 @@ function applyLanguage() {
   renderHomeStats();
   renderSetup();
   applyTheme();
+  renderMobileApp();
   if (battle) {
     battle.scene = {
       ...SCENES.find((s) => s.id === battle.scene.id),
@@ -2070,6 +2071,7 @@ function initializeUi() {
   applyLanguage();
   renderMe();
   renderSettings();
+  initializeMobileApp();
   document.getElementById("btn-language").onclick = () =>
     changeLanguage(language === "zh" ? "en" : "zh");
   document.getElementById("pref-language").onchange = (e) =>

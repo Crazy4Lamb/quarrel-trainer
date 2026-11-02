@@ -6,6 +6,8 @@ A bilingual communication practice app with light and dark themes. Rehearse calm
 
 [中文说明](README.zh-CN.md) | [English guide](README.en.md)
 
+[手机打开 / Open installable H5](https://crazy4lamb.github.io/quarrel-trainer/) · [H5 部署包 / Deployment ZIP](https://github.com/Crazy4Lamb/quarrel-trainer/raw/refs/heads/main/downloads/quarrel-trainer-h5.zip)
+
 [下载本地版 ZIP / Download portable ZIP](https://github.com/Crazy4Lamb/quarrel-trainer/raw/refs/heads/main/downloads/quarrel-trainer-local.zip) — 解压后双击 `Start.html`；无需安装。Extract and open `Start.html`; no installation required.
 
 ---
@@ -33,6 +35,20 @@ A bilingual communication practice app with light and dark themes. Rehearse calm
 
 ## 快速开始
 
+### 手机 H5：打开网页，安装到主屏幕
+
+[打开手机网页版](https://crazy4lamb.github.io/quarrel-trainer/) · [下载 H5 部署包](https://github.com/Crazy4Lamb/quarrel-trainer/raw/refs/heads/main/downloads/quarrel-trainer-h5.zip)
+
+这是可安装的 H5（PWA），无需 APK 或应用商店。Android 在 Chrome / Edge 中打开后，点页面「安装到主屏幕」，或使用浏览器菜单里的「安装应用 / 添加到主屏幕」。iPhone 用 Safari 打开，点「分享 → 添加到主屏幕」；如果有「作为网页 App 打开」选项，请保持开启。内置浏览器没有安装选项时，先在系统浏览器打开。
+
+首次联网打开并完成缓存后，内置练习可以离线重开；AI 对话仍需联网与完整 API 配置。设置里会显示离线内容是否就绪。安装需要 HTTPS（开发时 localhost 也可），直接打开本地 HTML 或手机访问普通局域网 HTTP 地址不能安装。安装入口会提供对应平台的说明。
+
+网站有新版本时会显示更新按钮，由使用者决定何时刷新；正在进行的练习会先要求结束并保存。本地文件版与网页版使用不同的浏览器存储空间，记录和 API 配置不会自动互通。
+
+部署到自己的 HTTPS 静态网站：运行 `node scripts/build-h5.cjs`，把 `dist/h5/` 的内容上传，保持目录结构。`manifest*.webmanifest`、`service-worker.js` 与 `icons/` 必须一起部署。项目子目录部署也支持。
+
+安装要求与浏览器差异可参考 [MDN 的 PWA 安装说明](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable)。
+
 ### 本地便携版：下载、解压、双击
 
 [下载本地版 ZIP](https://github.com/Crazy4Lamb/quarrel-trainer/raw/refs/heads/main/downloads/quarrel-trainer-local.zip)
@@ -49,6 +65,8 @@ A bilingual communication practice app with light and dark themes. Rehearse calm
 node scripts/build-local.cjs
 ```
 
+同时生成 H5 和本地版并刷新离线缓存版本：`node scripts/build.cjs`。修改网页后，发布前运行此命令，再提交更新的 `service-worker.js` 和 `downloads/`，让已安装用户能收到新版提示。
+
 构建时还会同步更新仓库 `downloads/` 中的 ZIP，提交该文件即可保持 GitHub 下载入口与源码一致。
 
 生成 `dist/quarrel-trainer-local.zip`（包含「Start.html」「Readme.txt」和「Example-skill.json」）及 `dist/quarrel-trainer-local.html`（独立单文件）。将 ZIP 或 HTML 直接发给使用者即可。打包仅包含应用代码，不包含浏览器里保存的 API Key、档案或记录。
@@ -60,7 +78,7 @@ git clone https://github.com/Crazy4Lamb/quarrel-trainer.git
 cd quarrel-trainer
 ```
 
-用完整浏览器窗口打开 index.html 即可使用本地规则模式，无需构建、npm 依赖或后端服务。请保留同目录下的 styles.css、i18n.js、skills.js 和 app.js。
+用完整浏览器窗口打开 index.html 即可使用本地规则模式，无需构建、npm 依赖或后端服务。请保留全部样式、脚本、manifest、service-worker.js 和 icons/ 目录。
 
 也可通过静态服务器访问，例如已安装 Python 时：
 
@@ -108,7 +126,7 @@ python -m http.server 8080
 
 ## 项目结构与开发
 
-index.html 是页面入口，styles.css 管理布局与主题，i18n.js 保存中英文界面与练习数据，skills.js 管理原创虚构角色、风格技能和生成约束，app.js 管理对练、AI 和存储。
+index.html 是页面入口，styles.css 管理布局与主题，i18n.js 保存中英文界面与练习数据，skills.js 管理原创虚构角色、风格技能和生成约束，app.js 管理对练、AI 和存储。pwa.js 提供安装与离线状态，manifest*.webmanifest 与 icons/ 提供主屏幕信息。service-worker.js 由 scripts/build-h5.cjs 生成，请修改 scripts/service-worker-template.js 后重新构建。
 
 安装 Playwright 后运行 `node tests/browser.cjs` 进行浏览器回归验证，运行 `node tests/openings.cjs` 验证动态开局、重复重试、取消与预置回退（Windows 默认使用 Edge；其他环境可用 BROWSER_CHANNEL 指定已安装的 Chromium 浏览器）。测试使用模拟接口和假密钥。
 
@@ -150,6 +168,8 @@ index.html 是页面入口，styles.css 管理布局与主题，i18n.js 保存�
 
 运行 `node tests/setup.cjs` 验证首页计数含义、默认页面收起自定义、直接开局、选择摘要、各尺寸可见的开始按钮，以及本地包中的同一流程。
 
+运行 `node tests/pwa.cjs` 验证真实 Service Worker 的子目录作用域、断网重载与对练、更新时保留记录、API 请求不缓存、安装入口与手机键盘布局。Safari 的添加入口按平台规则提供引导；测试不代表在实体 iPhone 上完成过安装验收。
+
 
 ---
 
@@ -176,6 +196,16 @@ A Chinese/English browser app for practicing responses to criticism, communicati
 
 ## Getting started
 
+### Mobile H5: open the site and add it to your home screen
+
+[Open the mobile web edition](https://crazy4lamb.github.io/quarrel-trainer/) · [Download the H5 deployment ZIP](https://github.com/Crazy4Lamb/quarrel-trainer/raw/refs/heads/main/downloads/quarrel-trainer-h5.zip)
+
+This is an installable web app (PWA), with no APK or app store required. On Android, open it in Chrome/Edge and use the page’s Install to home screen button or the browser’s Install app/Add to home screen menu. On iPhone, use Safari → Share → Add to Home Screen, leaving Open as Web App enabled if offered. Open in the system browser if an in-app browser has no install option.
+
+After the first online visit finishes caching, preset sessions can reopen offline. AI still needs a network connection and a complete API configuration. Settings show when offline content is ready. Installation requires HTTPS (localhost works for development), not a local HTML file or ordinary phone-to-LAN HTTP URL. Updates are offered explicitly and do not interrupt an unfinished session. Local-file and web editions use different browser storage; records and API settings are not automatically transferred.
+
+For your own HTTPS static host, run `node scripts/build-h5.cjs` and upload the contents of `dist/h5/`, keeping the manifest files, service worker and icons. Subdirectory hosting is supported. See [MDN’s installation guide](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable) for browser-specific requirements.
+
 ### Portable edition: download, extract and double-click
 
 [Download the portable ZIP](https://github.com/Crazy4Lamb/quarrel-trainer/raw/refs/heads/main/downloads/quarrel-trainer-local.zip)
@@ -192,6 +222,8 @@ From the project root (only the person building the files needs Node.js; no npm 
 node scripts/build-local.cjs
 ```
 
+Run `node scripts/build.cjs` to build both editions and refresh the offline cache version. After editing the app, run it before publishing and commit `service-worker.js` and `downloads/` so installed users receive an update prompt.
+
 The build also refreshes the ZIP in `downloads/`. Commit that file to keep the GitHub download in sync with the source.
 
 This creates `dist/quarrel-trainer-local.zip` with an HTML entry, usage instructions and a skill example, plus the standalone `dist/quarrel-trainer-local.html`. Share either file directly with users. The build includes application code, not API keys, profiles or records saved in your browser.
@@ -203,7 +235,7 @@ git clone https://github.com/Crazy4Lamb/quarrel-trainer.git
 cd quarrel-trainer
 ```
 
-Open index.html in a full browser window. Local rule mode requires no build, npm dependencies or backend. Keep styles.css, i18n.js, skills.js and app.js alongside index.html.
+Open index.html in a full browser window. Local rule mode requires no build, npm dependencies or backend. Keep all app styles/scripts, manifests, service-worker.js and the icons/ directory together.
 
 Alternatively, serve the directory with a static server. With Python installed:
 
@@ -249,7 +281,7 @@ Settings, language/theme preferences, profiles and history use browser localStor
 
 ## Structure and development
 
-index.html is the page entry; styles.css defines responsive layouts and themes; i18n.js contains translations and English practice data; app.js handles scoring, AI, storage and interactions.
+index.html is the page entry; styles.css defines responsive layouts and themes; i18n.js contains translations and English practice data; skills.js contains original characters, skills and generation constraints; app.js handles scoring, AI, storage and interactions. pwa.js handles installation and offline status; manifest*.webmanifest and icons/ define the home-screen app. service-worker.js is generated by scripts/build-h5.cjs: edit scripts/service-worker-template.js and rebuild to change it.
 
 With Playwright installed, run `node tests/browser.cjs` for browser regression checks and `node tests/openings.cjs` for fresh openings, duplicate retries, cancellation and preset fallback (Edge on Windows by default; BROWSER_CHANNEL can select another installed Chromium channel). Tests use mocked APIs and fake keys.
 
@@ -290,3 +322,5 @@ Finish the rounds or click End & review (结束并复盘) to see scores, highlig
 Run `node tests/international.cjs` to check browser-language defaults, translated character selection, generation constraints, responsive layouts and the English offline bundle.
 
 Run `node tests/setup.cjs` to verify readable counts, collapsed optional controls, default start, live selection summaries, a visible start button at all widths and the same flow in the portable bundle.
+
+Run `node tests/pwa.cjs` to check real service-worker scope, offline reload/play, explicit updates with retained records, uncached API requests, install controls and keyboard layout. Safari install instructions follow platform conventions; these checks do not constitute a physical-iPhone installation test.

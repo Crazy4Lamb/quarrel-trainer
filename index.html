@@ -2,7 +2,17 @@
 <html lang="zh-CN" data-theme="light">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Boundary Lab" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <meta name="theme-color" content="#f7f8fc" />
     <meta
       name="description"
@@ -174,6 +184,13 @@
                 <div class="hero-meta" data-i18n="heroMeta">
                   无需注册 · 本地模式无需 API Key
                 </div>
+                <button
+                  class="text-button pwa-home-install"
+                  id="btn-install-home"
+                  data-i18n="pwaInstall"
+                >
+                  安装到主屏幕 ↗
+                </button>
               </div>
               <div class="hero-visual" aria-hidden="true">
                 <div class="orbit orbit-one"></div>
@@ -659,6 +676,20 @@
                 <p class="hint" data-i18n="preferencesHint">
                   偏好自动保存，下次打开依然生效。
                 </p>
+                <section class="pwa-settings">
+                  <h2 class="sec" data-i18n="pwaTitle">手机安装与离线</h2>
+                  <p class="hint" id="pwa-status" role="status"></p>
+                  <button
+                    class="btn ghost"
+                    id="btn-install-settings"
+                    data-i18n="pwaInstall"
+                  >
+                    安装到主屏幕 ↗
+                  </button>
+                  <p class="hint" data-i18n="pwaOfflineNote">
+                    首次联网打开并完成缓存后，内置玩法可离线用。AI 仍需联网。
+                  </p>
+                </section>
                 <div class="settings-note">
                   <span aria-hidden="true">✦</span>
                   <p data-i18n="privacyNote">
@@ -776,8 +807,40 @@
       </div>
     </div>
     <div id="toast" class="toast" role="status" hidden></div>
+    <dialog
+      id="pwa-install-dialog"
+      class="pwa-dialog"
+      aria-labelledby="pwa-dialog-title"
+    >
+      <h2 id="pwa-dialog-title" data-i18n="pwaInstallTitle">
+        把它放到手机桌面
+      </h2>
+      <p id="pwa-install-help"></p>
+      <a
+        class="btn"
+        id="pwa-open-online"
+        href="https://crazy4lamb.github.io/quarrel-trainer/"
+        target="_blank"
+        rel="noopener"
+        hidden
+        data-i18n="pwaOpenOnline"
+        >打开手机网页版 ↗</a
+      ><button class="btn ghost" id="btn-close-install" data-i18n="pwaClose">
+        知道了
+      </button>
+    </dialog>
+    <aside id="pwa-update" class="pwa-update" role="status" hidden>
+      <div>
+        <strong data-i18n="pwaUpdateReady">新版本已准备好</strong>
+        <p id="pwa-update-note" class="hint"></p>
+      </div>
+      <button class="btn sm" id="btn-update-pwa" data-i18n="pwaUpdate">
+        刷新更新
+      </button>
+    </aside>
     <script src="i18n.js"></script>
     <script src="skills.js"></script>
+    <script src="pwa.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
