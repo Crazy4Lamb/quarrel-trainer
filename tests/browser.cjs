@@ -19,6 +19,7 @@ const root = path.resolve(__dirname, "..");
     const context = await browser.newContext({
       viewport: { width: 1440, height: 1000 },
       colorScheme: "light",
+      locale: "zh-CN",
     });
     const page = await context.newPage();
     page.on("pageerror", (error) => errors.push(error.message));
@@ -333,6 +334,7 @@ const root = path.resolve(__dirname, "..");
     const mobile = await browser.newPage({
       viewport: { width: 390, height: 844 },
       colorScheme: "light",
+      locale: "zh-CN",
     });
     mobile.on("pageerror", (error) => errors.push(error.message));
     await mobile.addInitScript(() =>

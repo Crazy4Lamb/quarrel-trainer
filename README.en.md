@@ -7,6 +7,10 @@ A Chinese/English browser app for practicing responses to criticism, communicati
 ## Features
 
 - Multiple opponents/scenarios, difficulty settings and optional proactive boundary setting.
+- A comeback lab with original fictional characters and a sample line before playing.
+- Four built-in style skills, JSON/Markdown import, JSON export and a bilingual offline example pack.
+- Independent difficulty and spice/profanity controls: clean, sarcastic or coarse (yep, keep it crude).
+- Explicit offline-preset and dynamic-AI modes, including in the portable edition. Offline mode makes no AI calls even with a saved key.
 - Five communication principles, response practice, scoring and post-session feedback.
 - Personal profiles, weak-point analysis, tailored strategies and ready-to-use phrases.
 - Session history and performance statistics.
@@ -17,12 +21,34 @@ A Chinese/English browser app for practicing responses to criticism, communicati
 
 ## Getting started
 
+### Portable edition: download, extract and double-click
+
+[Download the portable ZIP](https://github.com/Crazy4Lamb/quarrel-trainer/raw/refs/heads/main/downloads/quarrel-trainer-local.zip)
+
+Extract `quarrel-trainer-local.zip`, then double-click `Start.html`. Alternatively, save and open the standalone `quarrel-trainer-local.html`. All styles, scripts and Chinese/English presets are embedded. No installation, Node.js, Python, plugins or local server is required.
+
+Preset practice, reviews, history, languages and themes work offline. AI-generated content still requires an Internet connection and a complete API configuration. Settings and records live in your browser; keep using the same browser and file location. Moving the file, changing browsers or clearing browser data may make earlier records unavailable.
+
+### Maintainers: build the distribution
+
+From the project root (only the person building the files needs Node.js; no npm dependencies):
+
+```sh
+node scripts/build-local.cjs
+```
+
+The build also refreshes the ZIP in `downloads/`. Commit that file to keep the GitHub download in sync with the source.
+
+This creates `dist/quarrel-trainer-local.zip` with an HTML entry, usage instructions and a skill example, plus the standalone `dist/quarrel-trainer-local.html`. Share either file directly with users. The build includes application code, not API keys, profiles or records saved in your browser.
+
+### Running from source
+
 ```sh
 git clone https://github.com/Crazy4Lamb/quarrel-trainer.git
 cd quarrel-trainer
 ```
 
-Open index.html in a full browser window. Local rule mode requires no build, npm dependencies or backend. Keep styles.css, i18n.js and app.js alongside index.html.
+Open index.html in a full browser window. Local rule mode requires no build, npm dependencies or backend. Keep styles.css, i18n.js, skills.js and app.js alongside index.html.
 
 Alternatively, serve the directory with a static server. With Python installed:
 
@@ -42,11 +68,23 @@ Open http://localhost:8080.
 
 ## Appearance and language
 
-Use the top-right language and theme buttons, or Settings → Appearance & language. The system theme responds to your device preference. English mode includes English opponents, response detection and reviews. Existing messages and user input retain their original wording; switching preserves the current session and unsaved form drafts.
+The app starts in Chinese for Chinese-language browsers and English otherwise. Your manual language choice is saved. Use the top-right globe/language and theme buttons, or Settings → Appearance & language. The system theme responds to your device preference. English mode includes English opponents, response detection and reviews. Existing messages and user input retain their original wording; switching preserves the current session and unsaved form drafts.
+
+## Fictional entertainment and content sources
+
+The character cards use fictional archetypes and simple original letter-based graphics, with no real-person likenesses or franchise character choices. Shared generation rules require fresh dialogue, no recognizable quotes or catchphrases, no impersonation and no implied endorsement. The rules also apply to custom notes and imported skills.
+
+This design reduces reliance on existing identities and material; it does not verify rights automatically. Import content you created or have permission to use, and review model output and third-party skills.
+
+## Personas, skills and spice
+
+Open Play → Comeback lab to choose Straight Talker, Dry Wit, Logic Detective or Drama Buddy. Add personality notes and try a sample line. Choose a built-in skill or import JSON/Markdown. See [the skill format](skills/README.md) and [the bilingual example](skills/reviewer.json). Skill files provide text/data; they do not execute code.
+
+Difficulty changes rounds and opponent pressure; spice changes wording. Offline mode combines skill presets with clean, sarcastic or coarse delivery. AI mode uses your persona, skill, spice level and session situation. Custom persona directions and instruction-only Markdown skills require AI to generate new dialogue; skills without offline lines for the current language visibly fall back to default presets. Changing options applies to future sessions; the current session keeps its initial settings.
 
 ## Optional AI and storage
 
-With a complete API URL, key and model configuration, each new session generates a fresh situation, opponent opening and practice tip. Subsequent replies use this session’s situation. Recent openings help avoid repetition. Without a configuration, the app loads preset content directly. Invalid or repeated output is retried at most once within a shared 15-second generation deadline. Failures and timeouts fall back to presets; you can switch to a local opponent while waiting. Recent AI opening records help reduce repetition and are removed when browser site data is cleared.
+In AI mode, with a complete API URL, key and model configuration, each new session generates a fresh situation, opponent opening and practice tip. Subsequent replies use this session’s situation. Recent openings help avoid repetition. Without a configuration, the app loads preset content directly. Invalid or repeated output is retried at most once within a shared 15-second generation deadline. Failures and timeouts fall back to presets; you can switch to a local opponent while waiting. Recent AI opening records help reduce repetition and are removed when browser site data is cleared.
 
 Enter an endpoint, model and API key in Settings. The browser sends AI requests directly to your selected provider, including conversation content and authentication information. Provider billing and cross-origin policies apply. For CORS / Failed to fetch errors, check whether the endpoint accepts your browser origin.
 
@@ -57,6 +95,10 @@ Settings, language/theme preferences, profiles and history use browser localStor
 index.html is the page entry; styles.css defines responsive layouts and themes; i18n.js contains translations and English practice data; app.js handles scoring, AI, storage and interactions.
 
 With Playwright installed, run `node tests/browser.cjs` for browser regression checks and `node tests/openings.cjs` for fresh openings, duplicate retries, cancellation and preset fallback (Edge on Windows by default; BROWSER_CHANNEL can select another installed Chromium channel). Tests use mocked APIs and fake keys.
+
+Run `node tests/local.cjs` to build the portable files and check ZIP extraction, portable filenames, offline practice, reviews, persistence, languages and themes from a local file, with no external resource requests.
+
+Run `node tests/styles.cjs` for skill import/export, persona and spice controls, mode isolation and AI prompt integration. Portable tests also check imported skills and API-key mode, using mocked API responses.
 
 Both the interface and documentation support Chinese and English. Scores use local heuristic rules and are practice cues, not a measure of real communication ability. Local practice does not need an API key. Keep actual keys out of source code and Git.
 
@@ -87,3 +129,5 @@ Type a response and click the up-arrow button (or press Enter on desktop; Shift 
 ### 3. Review the session
 
 Finish the rounds or click End & review (结束并复盘) to see scores, highlights and coaching feedback. History (练习记录) shows past sessions; Profile (我的档案) configures your profile and weak points. AI errors or timeouts fall back to local opponents for the rest of the session; you can also switch manually while waiting. Try the local engine first, then optionally configure AI in 设置. These screenshots use local rule mode.
+
+Run `node tests/international.cjs` to check browser-language defaults, translated character selection, generation constraints, responsive layouts and the English offline bundle.

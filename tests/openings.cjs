@@ -29,7 +29,7 @@ const fixtures = [
     headless: true,
   });
   try {
-    const page = await browser.newPage();
+    const page = await browser.newPage({ locale: "zh-CN" });
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("dialog", (dialog) => dialog.accept());

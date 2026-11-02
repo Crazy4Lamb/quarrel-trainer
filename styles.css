@@ -1936,6 +1936,241 @@ svg .radar-grid {
     font-size: 14px !important;
   }
 }
+.style-lab {
+  margin-top: 24px;
+}
+.style-lab .preset-chips {
+  margin-top: 10px;
+}
+.style-lab .preset-chips button {
+  text-align: left;
+}
+.skill-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.example-lab {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+.example-lab > .fl {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 9px;
+}
+.example-output {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.9;
+}
+.spice-options {
+  display: grid;
+  gap: 8px;
+}
+.spice-options button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  color: var(--ink);
+  background: var(--bg);
+  min-width: 0;
+}
+.spice-options button strong {
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.spice-options button small {
+  font-size: 10px;
+  color: var(--ink2);
+}
+.spice-options button.sel {
+  border-color: var(--red);
+  background: var(--accent-soft);
+  color: var(--red-deep);
+}
+.setup-options {
+  position: static;
+}
+#skill-feedback:empty {
+  display: none;
+}
+@media (max-width: 600px) {
+  .spice-options button {
+    padding: 12px;
+  }
+  .skill-actions {
+    gap: 12px;
+  }
+  .style-lab {
+    padding: 18px;
+  }
+  .example-output {
+    font-size: 12px;
+  }
+}
+.style-shortcut {
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+}
+.style-shortcut > span {
+  font-size: 10px;
+  color: var(--ink2);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.style-shortcut .text-button {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--red-deep);
+}
+@media (max-width: 850px) {
+  .setup-layout > div:first-child {
+    display: contents;
+  }
+  .setup-layout > .setup-options {
+    grid-row: 3;
+  }
+  .setup-layout .style-lab {
+    grid-row: 4;
+  }
+  .setup-layout .scene-grid {
+    grid-row: 2;
+  }
+}
+.fiction-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--red-deep);
+  padding: 10px 12px;
+  background: var(--accent-soft);
+  border-radius: 9px;
+  margin-bottom: 20px;
+  line-height: 1.7;
+}
+.persona-fieldset {
+  border: 0;
+  min-inline-size: 0;
+  margin-bottom: 22px;
+}
+.persona-fieldset legend {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.persona-roster {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.persona-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: start;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--ink);
+  padding: 15px;
+  min-width: 0;
+  gap: 8px;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.persona-card:hover {
+  border-color: var(--red);
+}
+.persona-card[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--red);
+}
+.persona-avatar {
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  color: var(--red-deep);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.persona-card strong {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.persona-card small {
+  font-size: 12px;
+  color: var(--ink2);
+  line-height: 1.7;
+}
+.originality-note {
+  border-inline-start: 2px solid var(--line);
+  padding-inline-start: 10px;
+}
+.icon-button {
+  min-height: 44px;
+  min-width: 44px;
+  font-size: 12px;
+  gap: 7px;
+}
+.icon-button > svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+.theme-button > svg {
+  width: 20px;
+  height: 20px;
+}
+.skill-actions .text-button {
+  min-height: 44px;
+}
+.spice-options button {
+  min-height: 48px;
+}
+.spice-options button small {
+  font-size: 11px;
+}
+@media (max-width: 600px) {
+  .persona-card {
+    padding: 13px;
+  }
+  .header-actions {
+    gap: 6px;
+  }
+  .brand strong {
+    font-size: 14px;
+  }
+  .icon-button {
+    padding-inline: 9px;
+  }
+  .theme-button {
+    padding: 10px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

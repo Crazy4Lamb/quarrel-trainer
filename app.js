@@ -557,6 +557,7 @@ async function requestLLM(messages, temperature, signal, maxTokens) {
 function go(v) {
   const target = document.getElementById("view-" + v);
   if (!target) return;
+  if (v !== "setup") invalidateExample();
   document
     .querySelectorAll(".view")
     .forEach((x) => x.classList.toggle("active", x === target));
@@ -627,10 +628,15 @@ function renderSetup() {
     b.classList.toggle("sel", +b.dataset.d === selDiff);
     b.setAttribute("aria-pressed", +b.dataset.d === selDiff);
   });
+  renderStyleControls();
   document.getElementById("practice-mode").innerHTML =
     '<span class="mode-dot"></span>' +
     escapeHtml(
-      hasLLM() ? t("aiMode", { model: getSettings().model }) : t("localMode"),
+      usesAI()
+        ? t("aiMode", { model: getSettings().model })
+        : getPracticeOptions().mode === "ai"
+          ? t("engineMissing")
+          : t("localMode"),
     );
   const resume = document.getElementById("btn-resume");
   resume.hidden = !battle;
@@ -884,6 +890,9 @@ async function startBattle() {
     difficulty: selDiff,
     initializing: false,
     generatedScenario: null,
+    options: { ...getPracticeOptions() },
+    skill: selectedSkill(),
+    engine: usesAI() ? "ai" : "local",
   };
   setBusy(false);
   document.getElementById("reply-input").value = "";
@@ -895,7 +904,9 @@ async function startBattle() {
   const chat = document.getElementById("chat");
   chat.innerHTML = "";
   go("battle");
-  if (hasLLM()) {
+  if (battle.engine === "local" && battle.options.mode === "ai")
+    addMsg("sys", t("engineMissing"));
+  if (battle.engine === "ai") {
     const currentBattle = battle;
     const ctrl = new AbortController();
     currentBattle.initializing = true;
@@ -924,6 +935,7 @@ async function startBattle() {
       ];
     } catch (e) {
       if (battle !== currentBattle || currentBattle.over) return;
+      currentBattle.engine = "local";
       addMsg(
         "sys",
         ctrl.signal.aborted && !currentBattle.initializing
@@ -943,7 +955,25 @@ async function startBattle() {
     battle.scene.type + " · " + battle.scene.intro;
   addMsg("sys", battle.scene.soft);
   const openingLine = pick(battle.scene.open, battle.used.open);
-  addMsg("op", openingLine);
+  addMsg(
+    "op",
+    battle.llmMsgs ? openingLine : localStyledLine(openingLine, "opening"),
+  );
+  if (
+    battle.skill.id !== "standard" ||
+    battle.options.spice ||
+    battle.options.persona
+  ) {
+    addMsg(
+      "sys",
+      t("sessionStyle", {
+        skill: skillText(battle.skill.name),
+        spice: t(
+          ["spiceClean", "spiceWitty", "spiceCoarse"][battle.options.spice],
+        ),
+      }),
+    );
+  }
   if (battle.llmMsgs) {
     addMsg("sys", t("aiEnabled", { model: getSettings().model }));
   }
@@ -977,7 +1007,8 @@ async function generateOpening(currentBattle, boundary, signal) {
       content: `Generate a fresh session opening for a communication practice game.
 Return ONLY a JSON object with three string fields: "intro" (a concrete new situation), "hint" (one practical communication tip for the learner), and "opening" (the opponent's first spoken line, 1–2 sentences).
 Keep the chosen opponent's identity and style, but vary the specific incident, stakes, details, and wording. Do not copy the reference situation or repeat a previous opening. Use realistic disagreement without slurs or extreme threats.
-Write all three fields in ${currentBattle.language === "en" ? "English" : "Simplified Chinese"}. Keep intro and hint under 70 words each and opening under 50 words. No Markdown, narration in the opening, or extra fields.`,
+Write all three fields in ${currentBattle.language === "en" ? "English" : "Simplified Chinese"}. Keep intro and hint under 70 words each and opening under 50 words. No Markdown, narration in the opening, or extra fields.
+${stylePrompt(currentBattle.options, currentBattle.skill)}`,
     },
     {
       role: "user",
@@ -987,6 +1018,10 @@ Write all three fields in ${currentBattle.language === "en" ? "English" : "Simpl
         style: currentBattle.scene.type,
         referenceSituation: currentBattle.scene.intro,
         difficulty: currentBattle.diff.name,
+        originalCharacter: originalPersona(currentBattle.options).id,
+        styleNotes: currentBattle.options.persona,
+        skill: skillText(currentBattle.skill.name),
+        spiceLevel: currentBattle.options.spice,
         openingBoundary: boundary || undefined,
         avoidRepeating: previous.map(({ intro, opening }) => ({
           intro,
@@ -1129,6 +1164,7 @@ function setBusy(b) {
 }
 
 function useLocalOpponent() {
+  if (battle) battle.engine = "local";
   if (battle?.initializing) {
     battle.initializing = false;
     battle.request?.abort();
@@ -1167,14 +1203,16 @@ function buildOpponentSystem(collapse, ev) {
 - 台词风格参考（学习语气，不要照抄）：${sc.attack.join("｜")}
 
 # 当前状态
+- 难度：${battle.diff.name}；本局共 ${battle.maxRounds} 回合。高难度时更坚持自己的立场，低难度时更容易接受澄清。
 - 你的气焰值：${p} / 10（10=极其嚣张进逼；≤${battle.diff.retreat}=你已经撑不住了）
 ${react}
 
 # 表演规则
 1. 每轮只说 1~2 句，口语化，贴合人设；只输出台词本身，不要旁白、引号、动作描写、心理活动。
 2. 气焰值高（>6）就嚣张进攻；中等（3~6）被对方问住时要动摇、找补、心虚，但还嘴硬；${collapse ? "现在气焰值已跌破阈值：你必须认怂收场——找台阶、转移话题、偃旗息鼓，只说一句认怂台词。" : "系统判定对方招式凌厉时，你要演出被问住、逻辑动摇的样子。"}
-3. 对方自证、被你带节奏，你得寸进尺；对方上头骂人，你阴阳怪气拱火，但不跟他对骂脏话。
-4. 吵得真实，但不输出歧视性、越界的人身攻击。使用${battle.language === "en" ? "英文" : "中文"}输出。`;
+3. 对方自证、被你带节奏，你得寸进尺；措辞遵循下方选择的风格和粗俗程度。
+4. 使用${battle.language === "en" ? "英文" : "中文"}输出。不输出身份歧视、性羞辱或暴力威胁。
+${stylePrompt(battle.options, battle.skill)}`;
 }
 
 async function llmOpponentReply(collapse, ev, currentBattle) {
@@ -1204,7 +1242,7 @@ async function opponentTurn(ev) {
     u = battle.used;
   const useLLM = !!battle.llmMsgs;
   if (battle.pressure <= battle.diff.retreat) {
-    let line = pick(s.collapse, u.collapse);
+    let line = localStyledLine(pick(s.collapse, u.collapse), "reply");
     if (useLLM) {
       setBusy(true);
       try {
@@ -1212,6 +1250,7 @@ async function opponentTurn(ev) {
         if (ll && currentBattle.llmMsgs) line = ll;
       } catch (e) {
         currentBattle.llmMsgs = null;
+        currentBattle.engine = "local";
       }
       if (battle !== currentBattle || currentBattle.over) return;
       setBusy(false);
@@ -1230,6 +1269,7 @@ async function opponentTurn(ev) {
       if (battle !== currentBattle || currentBattle.over) return;
       const switched = !currentBattle.llmMsgs;
       currentBattle.llmMsgs = null;
+      currentBattle.engine = "local";
       addMsg(
         "sys",
         switched ? t("localSwitched") : t("aiFailed", { error: e.message }),
@@ -1252,7 +1292,7 @@ async function opponentTurn(ev) {
     } else {
       line = pick(s.attack, u.attack);
     }
-    addMsg("op", line);
+    addMsg("op", localStyledLine(line, "reply"));
   }
   if (battle.turn >= battle.maxRounds) {
     finishBattle(false);
@@ -1644,7 +1684,13 @@ function strategyHtml(p) {
 /* ---------- AI 深度复盘（配置了 API Key 时启用，失败回落规则点评） ---------- */
 async function maybeLLMReview(rec) {
   const box = document.getElementById("llm-review-box");
-  if (!box || !hasLLM() || !battle?.chatLog?.length) return;
+  if (
+    !box ||
+    !hasLLM() ||
+    !battle?.chatLog?.length ||
+    battle.engine === "local"
+  )
+    return;
   const snapshot = battle;
   // A language switch may redraw this review; reuse completed results and guard stale writes.
   if (snapshot.review?.language === language && snapshot.review.text) {
@@ -1913,10 +1959,9 @@ function applyLanguage() {
     name: t(["easy", "normal", "hard"][i]),
   }));
   document.documentElement.lang = language === "en" ? "en" : "zh-CN";
-  document.title =
-    language === "en"
-      ? "Boundary Lab · Practice calmer conversations"
-      : "吵架练习器 · 从容表达，守住边界";
+  document.title = t("appTitle");
+  document.querySelector('meta[name="description"]').content =
+    t("metaDescription");
   document
     .querySelectorAll("[data-i18n]")
     .forEach((el) => (el.innerHTML = t(el.dataset.i18n)));
@@ -1935,7 +1980,7 @@ function applyLanguage() {
       language === "en" ? "切换为中文" : "Switch to English",
     );
   document.getElementById("language-label").textContent =
-    language === "en" ? "中文" : "EN";
+    language === "en" ? "中文" : "English";
   document.getElementById("pref-language").value = language;
   document
     .querySelectorAll("[data-tag]")
@@ -1992,10 +2037,15 @@ function changeLanguage(next) {
 }
 function initializeUi() {
   const prefs = loadData().preferences || {};
-  language = prefs.language === "en" ? "en" : "zh";
+  language = ["zh", "en"].includes(prefs.language)
+    ? prefs.language
+    : /^zh\b/i.test(navigator.languages?.[0] || navigator.language || "en")
+      ? "zh"
+      : "en";
   themePreference = ["system", "light", "dark"].includes(prefs.theme)
     ? prefs.theme
     : "system";
+  initializeStyleControls();
   applyLanguage();
   renderMe();
   renderSettings();

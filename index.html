@@ -62,8 +62,28 @@
             id="btn-language"
             aria-label="Switch to English"
           >
-            <span aria-hidden="true">文 / A</span
-            ><span id="language-label">EN</span></button
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle
+                cx="12"
+                cy="12"
+                r="9"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
+              <ellipse
+                cx="12"
+                cy="12"
+                rx="4"
+                ry="9"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
+              <path
+                d="M3 12h18"
+                stroke="currentColor"
+                stroke-width="1.5"
+              /></svg
+            ><span id="language-label">English</span></button
           ><button
             class="icon-button theme-button"
             id="btn-theme"
@@ -225,8 +245,121 @@
                   ><span data-i18n="chooseOpponent">选择对手</span>
                 </h2>
                 <div class="scene-grid" id="scene-grid"></div>
+                <div class="card style-lab">
+                  <h2 class="sec" data-i18n="styleLabTitle">回怼实验室</h2>
+                  <div class="fiction-label">
+                    <span aria-hidden="true">✦</span
+                    ><span data-i18n="fictionLabel"
+                      >虚构角色 · 原创口吻 · 娱乐对练</span
+                    >
+                  </div>
+                  <fieldset class="persona-fieldset">
+                    <legend data-i18n="personaRosterTitle">
+                      选一位虚构搭档
+                    </legend>
+                    <div id="persona-roster" class="persona-roster"></div>
+                  </fieldset>
+                  <div class="form-item">
+                    <label
+                      class="fl"
+                      for="persona-input"
+                      data-i18n="personaTitle"
+                      >你想借谁的风格来怼？</label
+                    ><input
+                      id="persona-input"
+                      type="text"
+                      maxlength="160"
+                      data-placeholder="personaPlaceholder"
+                      placeholder="例如：冷幽默、短句反问；夸张一点，但朋友互损不记仇"
+                    />
+                    <div class="preset-chips" id="persona-examples"></div>
+                    <p class="hint" data-i18n="personaHint">
+                      AI 模式会参考这个人设；离线模式使用所选技能的预置台词。
+                    </p>
+                    <p
+                      class="hint originality-note"
+                      data-i18n="originalityNote"
+                    >
+                      只写性格与表达特点，不指定真人或影视角色，不照搬名台词。
+                    </p>
+                  </div>
+                  <div class="form-item">
+                    <label class="fl" for="skill-select" data-i18n="skillTitle"
+                      >加载一个风格 Skill</label
+                    ><select id="skill-select"></select>
+                    <p class="hint" id="skill-description"></p>
+                    <div class="skill-actions">
+                      <button
+                        class="text-button"
+                        id="btn-import-skill"
+                        data-i18n="importSkill"
+                      >
+                        导入技能</button
+                      ><button
+                        class="text-button"
+                        id="btn-export-skill"
+                        data-i18n="exportSkill"
+                      >
+                        导出所选技能</button
+                      ><button
+                        class="text-button"
+                        id="btn-remove-skill"
+                        hidden
+                        data-i18n="removeSkill"
+                      >
+                        移除
+                      </button>
+                    </div>
+                    <input
+                      id="skill-file"
+                      type="file"
+                      accept=".json,.md,.txt"
+                      hidden
+                    />
+                    <p class="hint" data-i18n="skillImportHint">
+                      支持 JSON 或 Markdown。JSON
+                      可附离线台词；只有文字规则的技能需要 AI 才能生成新内容。
+                    </p>
+                    <p class="hint" id="skill-feedback" role="status"></p>
+                  </div>
+                  <div class="example-lab">
+                    <label
+                      class="fl"
+                      for="example-input"
+                      data-i18n="exampleTitle"
+                      >先试一句：对方说了什么？</label
+                    ><textarea
+                      id="example-input"
+                      rows="2"
+                      maxlength="1000"
+                      data-placeholder="examplePlaceholder"
+                      placeholder="例如：你怎么这么矫情，开个玩笑都不行？"
+                    ></textarea
+                    ><button
+                      class="btn ghost"
+                      id="btn-example"
+                      data-i18n="generateExample"
+                    >
+                      给我一句回怼示范
+                    </button>
+                    <div
+                      id="example-output"
+                      class="example-output"
+                      role="status"
+                      hidden
+                    ></div>
+                  </div>
+                </div>
               </div>
               <div class="setup-options card">
+                <h2 class="sec" data-i18n="engineTitle">这局怎么开？</h2>
+                <div class="seg" id="engine-seg">
+                  <button data-mode="local" data-i18n="engineLocal">
+                    预置 · 离线</button
+                  ><button data-mode="ai" data-i18n="engineAI">
+                    AI · 动态
+                  </button>
+                </div>
                 <h2 class="sec">
                   <span class="step-number">02</span
                   ><span data-i18n="difficulty">练习强度</span>
@@ -243,6 +376,26 @@
                     ><small data-i18n="hardRounds">8 回合</small>
                   </button>
                 </div>
+                <h2 class="sec" data-i18n="spiceTitle">嘴辣 / 粗俗程度</h2>
+                <div class="spice-options" id="spice-seg">
+                  <button data-spice="0">
+                    <strong data-i18n="spiceClean">文明过招</strong
+                    ><small data-i18n="spiceCleanSub"
+                      >有理有据，不带脏字</small
+                    ></button
+                  ><button data-spice="1">
+                    <strong data-i18n="spiceWitty">阴阳吐槽</strong
+                    ><small data-i18n="spiceWittySub"
+                      >嘴上带刺，笑里藏刀</small
+                    ></button
+                  ><button data-spice="2">
+                    <strong data-i18n="spiceCoarse">江湖粗口</strong
+                    ><small data-i18n="spiceCoarseSub">（爷就喜欢俗的）</small>
+                  </button>
+                </div>
+                <p class="hint" data-i18n="spiceHint">
+                  嘴辣只改变措辞，难度决定回合数和对手强度。
+                </p>
                 <h2 class="sec">
                   <span class="step-number">03</span
                   ><label for="boundary-input" data-i18n="boundaryTitle"
@@ -259,6 +412,16 @@
                   placeholder="例如：我愿意讨论问题，但不接受人身评价。"
                 ></textarea>
                 <div class="practice-mode" id="practice-mode"></div>
+                <div class="style-shortcut">
+                  <span id="style-summary"></span
+                  ><button
+                    class="text-button"
+                    id="btn-style-options"
+                    data-i18n="adjustStyle"
+                  >
+                    调整人设与技能 →
+                  </button>
+                </div>
                 <button class="btn" id="btn-start">
                   <span data-i18n="beginPractice">开始这局练习</span
                   ><span aria-hidden="true">→</span>
@@ -560,6 +723,7 @@
     </div>
     <div id="toast" class="toast" role="status" hidden></div>
     <script src="i18n.js"></script>
+    <script src="skills.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
