@@ -230,206 +230,260 @@
           </section>
           <section class="view" id="view-setup">
             <div class="page-eyebrow" data-i18n="practiceEyebrow">
-              从一个熟悉的场景开始
+              选个场景，就能开始
             </div>
             <h1 class="page-title" data-i18n="practiceTitle">
-              给自己一次练习的机会
+              两步选好，直接开练
             </h1>
             <p class="page-description" data-i18n="practiceDescription">
-              选择场景与难度。这里没有标准答案，试着说出你的想法。
+              默认选项已经准备好。第一次玩，选个场景后直接开始就行。
             </p>
-            <div class="setup-layout">
-              <div>
-                <h2 class="sec">
-                  <span class="step-number">01</span
-                  ><span data-i18n="chooseOpponent">选择对手</span>
-                </h2>
-                <div class="scene-grid" id="scene-grid"></div>
-                <div class="card style-lab">
-                  <h2 class="sec" data-i18n="styleLabTitle">回怼实验室</h2>
-                  <div class="fiction-label">
-                    <span aria-hidden="true">✦</span
-                    ><span data-i18n="fictionLabel"
-                      >虚构角色 · 原创口吻 · 娱乐对练</span
-                    >
-                  </div>
-                  <fieldset class="persona-fieldset">
-                    <legend data-i18n="personaRosterTitle">
-                      选一位虚构搭档
-                    </legend>
-                    <div id="persona-roster" class="persona-roster"></div>
-                  </fieldset>
-                  <div class="form-item">
-                    <label
-                      class="fl"
-                      for="persona-input"
-                      data-i18n="personaTitle"
-                      >你想借谁的风格来怼？</label
-                    ><input
-                      id="persona-input"
-                      type="text"
-                      maxlength="160"
-                      data-placeholder="personaPlaceholder"
-                      placeholder="例如：冷幽默、短句反问；夸张一点，但朋友互损不记仇"
-                    />
-                    <div class="preset-chips" id="persona-examples"></div>
-                    <p class="hint" data-i18n="personaHint">
-                      AI 模式会参考这个人设；离线模式使用所选技能的预置台词。
-                    </p>
-                    <p
-                      class="hint originality-note"
-                      data-i18n="originalityNote"
-                    >
-                      只写性格与表达特点，不指定真人或影视角色，不照搬名台词。
-                    </p>
-                  </div>
-                  <div class="form-item">
-                    <label class="fl" for="skill-select" data-i18n="skillTitle"
-                      >加载一个风格 Skill</label
-                    ><select id="skill-select"></select>
-                    <p class="hint" id="skill-description"></p>
-                    <div class="skill-actions">
-                      <button
-                        class="text-button"
-                        id="btn-import-skill"
-                        data-i18n="importSkill"
-                      >
-                        导入技能</button
-                      ><button
-                        class="text-button"
-                        id="btn-export-skill"
-                        data-i18n="exportSkill"
-                      >
-                        导出所选技能</button
-                      ><button
-                        class="text-button"
-                        id="btn-remove-skill"
-                        hidden
-                        data-i18n="removeSkill"
-                      >
-                        移除
-                      </button>
-                    </div>
-                    <input
-                      id="skill-file"
-                      type="file"
-                      accept=".json,.md,.txt"
-                      hidden
-                    />
-                    <p class="hint" data-i18n="skillImportHint">
-                      支持 JSON 或 Markdown。JSON
-                      可附离线台词；只有文字规则的技能需要 AI 才能生成新内容。
-                    </p>
-                    <p class="hint" id="skill-feedback" role="status"></p>
-                  </div>
-                  <div class="example-lab">
-                    <label
-                      class="fl"
-                      for="example-input"
-                      data-i18n="exampleTitle"
-                      >先试一句：对方说了什么？</label
-                    ><textarea
-                      id="example-input"
-                      rows="2"
-                      maxlength="1000"
-                      data-placeholder="examplePlaceholder"
-                      placeholder="例如：你怎么这么矫情，开个玩笑都不行？"
-                    ></textarea
-                    ><button
-                      class="btn ghost"
-                      id="btn-example"
-                      data-i18n="generateExample"
-                    >
-                      给我一句回怼示范
-                    </button>
-                    <div
-                      id="example-output"
-                      class="example-output"
-                      role="status"
-                      hidden
-                    ></div>
-                  </div>
-                </div>
-              </div>
-              <div class="setup-options card">
-                <h2 class="sec" data-i18n="engineTitle">这局怎么开？</h2>
-                <div class="seg" id="engine-seg">
-                  <button data-mode="local" data-i18n="engineLocal">
-                    预置 · 离线</button
-                  ><button data-mode="ai" data-i18n="engineAI">
-                    AI · 动态
-                  </button>
-                </div>
-                <h2 class="sec">
-                  <span class="step-number">02</span
-                  ><span data-i18n="difficulty">练习强度</span>
-                </h2>
-                <div class="seg" id="diff-seg">
-                  <button data-d="0">
-                    <span data-i18n="easy">轻松</span
-                    ><small data-i18n="easyRounds">4 回合</small></button
-                  ><button data-d="1" class="sel">
-                    <span data-i18n="normal">常规</span
-                    ><small data-i18n="normalRounds">6 回合</small></button
-                  ><button data-d="2">
-                    <span data-i18n="hard">挑战</span
-                    ><small data-i18n="hardRounds">8 回合</small>
-                  </button>
-                </div>
-                <h2 class="sec" data-i18n="spiceTitle">嘴辣 / 粗俗程度</h2>
-                <div class="spice-options" id="spice-seg">
-                  <button data-spice="0">
-                    <strong data-i18n="spiceClean">文明过招</strong
-                    ><small data-i18n="spiceCleanSub"
-                      >有理有据，不带脏字</small
-                    ></button
-                  ><button data-spice="1">
-                    <strong data-i18n="spiceWitty">阴阳吐槽</strong
-                    ><small data-i18n="spiceWittySub"
-                      >嘴上带刺，笑里藏刀</small
-                    ></button
-                  ><button data-spice="2">
-                    <strong data-i18n="spiceCoarse">江湖粗口</strong
-                    ><small data-i18n="spiceCoarseSub">（爷就喜欢俗的）</small>
-                  </button>
-                </div>
-                <p class="hint" data-i18n="spiceHint">
-                  嘴辣只改变措辞，难度决定回合数和对手强度。
-                </p>
-                <h2 class="sec">
-                  <span class="step-number">03</span
-                  ><label for="boundary-input" data-i18n="boundaryTitle"
-                    >先说清你的边界</label
-                  ><span class="optional" data-i18n="optional">可选</span>
-                </h2>
-                <p class="hint" data-i18n="boundaryHint">
-                  这句话会作为你的开场。也可以留空，在对话中慢慢练习。
-                </p>
-                <textarea
-                  id="boundary-input"
-                  rows="3"
-                  data-placeholder="boundaryPlaceholder"
-                  placeholder="例如：我愿意讨论问题，但不接受人身评价。"
-                ></textarea>
+            <div class="setup-launch" aria-label="开始练习">
+              <div class="setup-launch-copy">
+                <span class="setup-ready" data-i18n="setupReady"
+                  >已为你准备好一局</span
+                >
+                <p id="setup-summary" aria-live="polite"></p>
                 <div class="practice-mode" id="practice-mode"></div>
-                <div class="style-shortcut">
-                  <span id="style-summary"></span
-                  ><button
-                    class="text-button"
-                    id="btn-style-options"
-                    data-i18n="adjustStyle"
-                  >
-                    调整人设与技能 →
-                  </button>
-                </div>
-                <button class="btn" id="btn-start">
-                  <span data-i18n="beginPractice">开始这局练习</span
-                  ><span aria-hidden="true">→</span>
-                </button>
-                <p class="hint centered" data-i18n="practiceTip">
-                  过程中可以随时查看心法或结束复盘
-                </p>
               </div>
+              <button class="btn" id="btn-start">
+                <span data-i18n="beginPractice">开始练习</span
+                ><span aria-hidden="true">→</span>
+              </button>
+            </div>
+            <section
+              class="card setup-step"
+              aria-labelledby="setup-scene-heading"
+            >
+              <div class="setup-step-heading">
+                <span class="step-number">1</span>
+                <div>
+                  <h2 id="setup-scene-heading" data-i18n="setupSceneTitle">
+                    选个想练的场景
+                  </h2>
+                  <p data-i18n="setupSceneHint">
+                    点一个就选好了，也可以保留默认场景。
+                  </p>
+                </div>
+              </div>
+              <div
+                class="scene-grid"
+                id="scene-grid"
+                role="group"
+                aria-labelledby="setup-scene-heading"
+              ></div>
+              <p
+                class="selected-scene-description"
+                id="setup-scene-description"
+              ></p>
+            </section>
+            <section
+              class="card setup-step"
+              aria-labelledby="setup-flavor-heading"
+            >
+              <div class="setup-step-heading">
+                <span class="step-number">2</span>
+                <div>
+                  <h2 id="setup-flavor-heading" data-i18n="setupFlavorTitle">
+                    选难度和嘴辣程度
+                  </h2>
+                  <p data-i18n="setupFlavorHint">
+                    不确定怎么选？保留「常规＋文明过招」即可。
+                  </p>
+                </div>
+              </div>
+              <div class="setup-flavors">
+                <fieldset>
+                  <legend data-i18n="difficulty">难度</legend>
+                  <div class="seg" id="diff-seg">
+                    <button data-d="0">
+                      <span data-i18n="easy">轻松</span
+                      ><small data-i18n="easyRounds">4 回合</small></button
+                    ><button data-d="1" class="sel">
+                      <span data-i18n="normal">常规</span
+                      ><small data-i18n="normalRounds">6 回合</small></button
+                    ><button data-d="2">
+                      <span data-i18n="hard">挑战</span
+                      ><small data-i18n="hardRounds">8 回合</small>
+                    </button>
+                  </div>
+                </fieldset>
+                <fieldset>
+                  <legend data-i18n="spiceTitle">嘴辣程度</legend>
+                  <div class="spice-options" id="spice-seg">
+                    <button data-spice="0">
+                      <strong data-i18n="spiceClean">文明过招</strong
+                      ><small data-i18n="spiceCleanSub"
+                        >有理有据，不带脏字</small
+                      ></button
+                    ><button data-spice="1">
+                      <strong data-i18n="spiceWitty">阴阳吐槽</strong
+                      ><small data-i18n="spiceWittySub"
+                        >嘴上带刺，笑里藏刀</small
+                      ></button
+                    ><button data-spice="2">
+                      <strong data-i18n="spiceCoarse">江湖粗口</strong
+                      ><small data-i18n="spiceCoarseSub"
+                        >（爷就喜欢俗的）</small
+                      >
+                    </button>
+                  </div>
+                </fieldset>
+              </div>
+              <p class="hint" data-i18n="spiceHint">
+                难度决定回合与对手强度；嘴辣只改变措辞。
+              </p>
+            </section>
+            <details class="card style-lab" id="setup-customize">
+              <summary class="customize-heading">
+                <span
+                  ><strong data-i18n="setupCustomizeTitle">自定义玩法</strong
+                  ><small data-i18n="setupCustomizeHint"
+                    >可选：虚构角色、Skill、AI
+                    对手、开场白。不设置也能玩。</small
+                  ></span
+                ><span class="customize-toggle" aria-hidden="true">＋</span>
+              </summary>
+              <div class="customize-content">
+                <section class="setup-engine">
+                  <h2 class="sec" data-i18n="setupEngineTitle">选择对手来源</h2>
+                  <div class="seg" id="engine-seg">
+                    <button data-mode="local" data-i18n="engineLocal">
+                      预置 · 离线</button
+                    ><button data-mode="ai" data-i18n="engineAI">
+                      AI · 动态
+                    </button>
+                  </div>
+                  <p class="hint" id="setup-engine-hint"></p>
+                  <button
+                    class="text-button"
+                    onclick="go('settings')"
+                    data-i18n="setupConfigureAI"
+                  >
+                    去设置 AI 连接 →
+                  </button>
+                </section>
+
+                <div class="fiction-label">
+                  <span aria-hidden="true">✦</span
+                  ><span data-i18n="fictionLabel"
+                    >虚构角色 · 原创口吻 · 娱乐对练</span
+                  >
+                </div>
+                <fieldset class="persona-fieldset">
+                  <legend data-i18n="personaRosterTitle">选一位虚构搭档</legend>
+                  <div id="persona-roster" class="persona-roster"></div>
+                </fieldset>
+                <div class="form-item">
+                  <label class="fl" for="persona-input" data-i18n="personaTitle"
+                    >你想借谁的风格来怼？</label
+                  ><input
+                    id="persona-input"
+                    type="text"
+                    maxlength="160"
+                    data-placeholder="personaPlaceholder"
+                    placeholder="例如：冷幽默、短句反问；夸张一点，但朋友互损不记仇"
+                  />
+                  <div class="preset-chips" id="persona-examples"></div>
+                  <p class="hint" data-i18n="personaHint">
+                    AI 模式会参考这个人设；离线模式使用所选技能的预置台词。
+                  </p>
+                  <p class="hint originality-note" data-i18n="originalityNote">
+                    只写性格与表达特点，不指定真人或影视角色，不照搬名台词。
+                  </p>
+                </div>
+                <div class="form-item">
+                  <label class="fl" for="skill-select" data-i18n="skillTitle"
+                    >加载一个风格 Skill</label
+                  ><select id="skill-select"></select>
+                  <p class="hint" id="skill-description"></p>
+                  <div class="skill-actions">
+                    <button
+                      class="text-button"
+                      id="btn-import-skill"
+                      data-i18n="importSkill"
+                    >
+                      导入技能</button
+                    ><button
+                      class="text-button"
+                      id="btn-export-skill"
+                      data-i18n="exportSkill"
+                    >
+                      导出所选技能</button
+                    ><button
+                      class="text-button"
+                      id="btn-remove-skill"
+                      hidden
+                      data-i18n="removeSkill"
+                    >
+                      移除
+                    </button>
+                  </div>
+                  <input
+                    id="skill-file"
+                    type="file"
+                    accept=".json,.md,.txt"
+                    hidden
+                  />
+                  <p class="hint" data-i18n="skillImportHint">
+                    支持 JSON 或 Markdown。JSON
+                    可附离线台词；只有文字规则的技能需要 AI 才能生成新内容。
+                  </p>
+                  <p class="hint" id="skill-feedback" role="status"></p>
+                </div>
+                <div class="example-lab">
+                  <label class="fl" for="example-input" data-i18n="exampleTitle"
+                    >先试一句：对方说了什么？</label
+                  ><textarea
+                    id="example-input"
+                    rows="2"
+                    maxlength="1000"
+                    data-placeholder="examplePlaceholder"
+                    placeholder="例如：你怎么这么矫情，开个玩笑都不行？"
+                  ></textarea
+                  ><button
+                    class="btn ghost"
+                    id="btn-example"
+                    data-i18n="generateExample"
+                  >
+                    给我一句回怼示范
+                  </button>
+                  <div
+                    id="example-output"
+                    class="example-output"
+                    role="status"
+                    hidden
+                  ></div>
+                </div>
+
+                <section class="setup-boundary">
+                  <label
+                    class="fl"
+                    for="boundary-input"
+                    data-i18n="boundaryTitle"
+                    >开场白（可选）</label
+                  >
+                  <p class="hint" data-i18n="boundaryHint">
+                    留空即可开始；填写后会作为你的第一句回应。
+                  </p>
+                  <textarea
+                    id="boundary-input"
+                    rows="3"
+                    data-placeholder="boundaryPlaceholder"
+                    placeholder="例如：我愿意讨论问题，但不接受人身评价。"
+                  ></textarea>
+                </section>
+              </div>
+            </details>
+            <div class="setup-customize-link">
+              <span id="style-summary"></span
+              ><button
+                class="text-button"
+                id="btn-style-options"
+                data-i18n="adjustStyle"
+              >
+                调整自定义玩法 →
+              </button>
             </div>
             <button
               class="btn ghost"

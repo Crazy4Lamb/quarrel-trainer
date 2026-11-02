@@ -72,8 +72,10 @@ python -m http.server 8080
 
 ## 使用流程
 
-1. 选择界面语言、对手、难度和可选的边界设定。
-2. 点击开始：完整配置 AI 时等待本局情境生成；未配置则立即使用本地预置。等待时可手动切换本地对手。
+首页的数字分别表示已完成练习局数、可选场景数和心法数量。开始练习页默认只显示场景、难度与嘴辣选项；预选内容可直接开始，顶部按钮随滚动保持可见。角色、Skill、AI 和开场白都在默认收起的「自定义玩法（可选）」中。
+
+1. 选择一个场景；第一次可以保留默认的「常规＋文明过招」。
+2. 点击顶部「开始练习」，进入对话后输入回应。想改角色、导入 Skill、接入 AI 或填写开场白，再展开「自定义玩法」。
 3. 输入回应并完成模拟对话，AI 对手会围绕本局生成的情境继续回应。
 4. 查看本局评分、金句和教练点评。
 5. 在个人档案中设置常见场景和软肋，生成针对性的练习策略。
@@ -90,7 +92,7 @@ python -m http.server 8080
 
 ## 人设、Skill 与嘴辣程度
 
-在「开始练习 → 回怼实验室」先选择直球搭档、冷面段子手、逻辑侦探或戏精搭档，再补充“原创短句、冷幽默反问”等性格特点。点击「给我一句回怼示范」，可先看回应效果。
+在「开始练习 → 自定义玩法」先选择直球搭档、冷面段子手、逻辑侦探或戏精搭档，再补充“原创短句、冷幽默反问”等性格特点。点击「给我一句回怼示范」，可先看回应效果。
 
 内置技能包括本色应战、冷面辩手、脱口秀嘴替、市井直球。可导入附带的 `skills/reviewer.json`，或自行编写 JSON / Markdown 技能；格式见 [技能说明](skills/README.md)。导入只读取文字规则和预置内容，不执行代码。
 
@@ -132,7 +134,7 @@ index.html 是页面入口，styles.css 管理布局与主题，i18n.js 保存�
 | 常规 | 6    | 练习连续对话与转移提问权   |
 | 挑战 | 8    | 面对更强势的对手，坚持边界 |
 
-「先说清你的边界」可填写开场边界，例如“责任可以讨论，但请先把具体事实说清楚”。留空也可开始。
+展开「自定义玩法」后，可在「开场白」填写开场边界，例如“责任可以讨论，但请先把具体事实说清楚”。留空也可开始。
 
 ### 2. 回应与观察反馈
 
@@ -145,6 +147,8 @@ index.html 是页面入口，styles.css 管理布局与主题，i18n.js 保存�
 完成设定回合，或点击「结束并复盘」，查看评分、金句和教练点评。「练习记录」查看历史，「我的档案」设置个人档案与练习软肋。AI 请求失败或超时后，本局会改用本地对手；也可在等待时手动切换。先用本地模式体验，再在「设置」里按需要配置 AI；截图使用本地规则模式。
 
 运行 `node tests/international.cjs` 验证浏览器语言默认值、双语角色选择、生成约束、响应式布局和英文离线单文件。
+
+运行 `node tests/setup.cjs` 验证首页计数含义、默认页面收起自定义、直接开局、选择摘要、各尺寸可见的开始按钮，以及本地包中的同一流程。
 
 
 ---
@@ -211,8 +215,10 @@ Open http://localhost:8080.
 
 ## Workflow
 
-1. Choose a language, opponent, difficulty and optional boundary settings.
-2. Start the session: a complete AI configuration generates its situation first; local mode starts from presets. You may switch to a local opponent while waiting.
+Home counts show completed sessions, available scenarios and techniques. The setup page shows two short steps with a start action that stays visible while scrolling. Characters, skills, AI and opening text are in the optional, initially collapsed Customize your game section.
+
+1. Pick a situation. First-time players can keep Normal + Clean.
+2. Select Start practice at the top, then type a response as you would in a chat. Expand Customize your game only if you want characters, skills, AI or an opening line.
 3. Type responses and continue the conversation within this session’s situation.
 4. Review scores, highlighted responses and coaching feedback.
 5. Customize your profile and recurring difficulties for targeted strategies.
@@ -229,7 +235,7 @@ This design reduces reliance on existing identities and material; it does not ve
 
 ## Personas, skills and spice
 
-Open Play → Comeback lab to choose Straight Talker, Dry Wit, Logic Detective or Drama Buddy. Add personality notes and try a sample line. Choose a built-in skill or import JSON/Markdown. See [the skill format](skills/README.md) and [the bilingual example](skills/reviewer.json). Skill files provide text/data; they do not execute code.
+Open Play → Customize your game to choose Straight Talker, Dry Wit, Logic Detective or Drama Buddy. Add personality notes and try a sample line. Choose a built-in skill or import JSON/Markdown. See [the skill format](skills/README.md) and [the bilingual example](skills/reviewer.json). Skill files provide text/data; they do not execute code.
 
 Difficulty changes rounds and opponent pressure; spice changes wording. Offline mode combines skill presets with clean, sarcastic or coarse delivery. AI mode uses your persona, skill, spice level and session situation. Custom persona directions and instruction-only Markdown skills require AI to generate new dialogue; skills without offline lines for the current language visibly fall back to default presets. Changing options applies to future sessions; the current session keeps its initial settings.
 
@@ -269,7 +275,7 @@ Click Start Game (开始游戏), or Practice (开始练习) in the navigation. O
 | Normal / 常规    | 6      | Sustained conversation and questioning        |
 | Challenge / 挑战 | 8      | Maintain boundaries against stronger pressure |
 
-Optionally enter an opening boundary in Set an opening boundary (先说清你的边界), such as “We can discuss responsibility, but first specify the facts.” You can leave it empty.
+Expand Customize your game to optionally enter an opening boundary in Your opening line, such as “We can discuss responsibility, but first specify the facts.” You can leave it empty.
 
 ### 2. Respond and read feedback
 
@@ -282,3 +288,5 @@ Type a response and click the up-arrow button (or press Enter on desktop; Shift 
 Finish the rounds or click End & review (结束并复盘) to see scores, highlights and coaching feedback. History (练习记录) shows past sessions; Profile (我的档案) configures your profile and weak points. AI errors or timeouts fall back to local opponents for the rest of the session; you can also switch manually while waiting. Try the local engine first, then optionally configure AI in 设置. These screenshots use local rule mode.
 
 Run `node tests/international.cjs` to check browser-language defaults, translated character selection, generation constraints, responsive layouts and the English offline bundle.
+
+Run `node tests/setup.cjs` to verify readable counts, collapsed optional controls, default start, live selection summaries, a visible start button at all widths and the same flow in the portable bundle.

@@ -596,13 +596,13 @@ function renderMethods() {
 }
 function renderHomeStats() {
   document.getElementById("home-stats").innerHTML = [
-    [getHistory().length, "statSessions", "statSessionsSub"],
-    [SCENES.length, "statScenarios", "statScenariosSub"],
-    [METHODS.length, "statMethods", "statMethodsSub"],
+    [getHistory().length, "statSessions", "statSessionsValue"],
+    [SCENES.length, "statScenarios", "statScenariosValue"],
+    [METHODS.length, "statMethods", "statMethodsValue"],
   ]
     .map(
-      ([n, title, sub]) =>
-        `<div class="home-stat"><strong>${String(n).padStart(2, "0")}</strong><div><span>${t(title)}</span><small>${t(sub)}</small></div></div>`,
+      ([n, title, value]) =>
+        `<div class="home-stat"><strong>${t(value, { n, unit: n === 1 ? "session" : "sessions" })}</strong><span>${t(title)}</span></div>`,
     )
     .join("");
 }
@@ -612,7 +612,7 @@ function renderSetup() {
   const grid = document.getElementById("scene-grid");
   grid.innerHTML = SCENES.map(
     (s) =>
-      `<button type="button" class="scene ${s.id === selScene ? "sel" : ""}" data-id="${s.id}" aria-pressed="${s.id === selScene}"><span class="em" aria-hidden="true">${s.em}</span><span class="nm">${s.name}</span><span class="tp">${s.type}</span><span class="scene-intro">${s.intro}</span></button>`,
+      `<button type="button" class="scene ${s.id === selScene ? "sel" : ""}" data-id="${s.id}" aria-pressed="${s.id === selScene}"><span class="em" aria-hidden="true">${s.em}</span><span class="nm">${s.name}</span><span class="tp">${s.type}</span></button>`,
   ).join("");
   grid.querySelectorAll(".scene").forEach(
     (el) =>
@@ -629,6 +629,31 @@ function renderSetup() {
     b.setAttribute("aria-pressed", +b.dataset.d === selDiff);
   });
   renderStyleControls();
+  const resume = document.getElementById("btn-resume");
+  resume.hidden = !battle;
+  resume.textContent = t(battle?.over ? "viewLatestReport" : "resumeBattle");
+  resume.onclick = () => go(battle?.over ? "report" : "battle");
+}
+function renderSetupSummary() {
+  const scene = SCENES.find((item) => item.id === selScene),
+    options = getPracticeOptions();
+  document.getElementById("setup-summary").textContent = t("setupSelection", {
+    scene: scene.name,
+    difficulty: DIFFS[selDiff].name,
+    spice: t(["spiceClean", "spiceWitty", "spiceCoarse"][options.spice]),
+  });
+  document.getElementById("setup-scene-description").textContent = t(
+    "setupScenePreview",
+    { intro: scene.intro },
+  );
+  document.getElementById("setup-engine-hint").textContent = usesAI()
+    ? t("setupAIHint")
+    : options.mode === "ai"
+      ? t("engineMissing")
+      : t("setupLocalHint");
+  document
+    .querySelector(".setup-launch")
+    .setAttribute("aria-label", t("beginPractice"));
   document.getElementById("practice-mode").innerHTML =
     '<span class="mode-dot"></span>' +
     escapeHtml(
@@ -638,10 +663,6 @@ function renderSetup() {
           ? t("engineMissing")
           : t("localMode"),
     );
-  const resume = document.getElementById("btn-resume");
-  resume.hidden = !battle;
-  resume.textContent = t(battle?.over ? "viewLatestReport" : "resumeBattle");
-  resume.onclick = () => go(battle?.over ? "report" : "battle");
 }
 document.querySelectorAll("#diff-seg button").forEach(
   (b) =>

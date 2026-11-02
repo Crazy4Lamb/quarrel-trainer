@@ -2,6 +2,40 @@
 let language = "zh";
 let themePreference = "system";
 const UI = {
+  statSessionsValue: ["{n} 局", "{n} {unit}"],
+  statScenariosValue: ["{n} 个场景", "{n} scenarios"],
+  statMethodsValue: ["{n} 个心法", "{n} techniques"],
+  setupReady: ["已选好，随时开练", "Ready when you are"],
+  setupSelection: [
+    "{scene} · {difficulty} · {spice}",
+    "{scene} · {difficulty} · {spice}",
+  ],
+  setupSceneTitle: ["选个想练的场景", "Pick a situation"],
+  setupSceneHint: [
+    "点一个就选好了，也可以保留默认场景。",
+    "Choose one, or keep the default.",
+  ],
+  setupScenePreview: ["这一局的情境：{intro}", "This round: {intro}"],
+  setupFlavorTitle: ["选难度和嘴辣程度", "Choose difficulty and spice"],
+  setupFlavorHint: [
+    "第一次玩？用「常规＋文明过招」就可以。",
+    "First time? Normal + Clean is a good start.",
+  ],
+  setupCustomizeTitle: ["自定义玩法（可选）", "Customize your game (optional)"],
+  setupCustomizeHint: [
+    "角色、Skill、AI 对手、开场白。不设置也能玩。",
+    "Characters, skills, AI, and an opening line. Skip these if you like.",
+  ],
+  setupEngineTitle: ["选择对手来源", "Where should the dialogue come from?"],
+  setupLocalHint: [
+    "内置台词，断网也能玩，不需要 API Key。",
+    "Ready-made dialogue. Works offline, no API key needed.",
+  ],
+  setupAIHint: [
+    "使用你在设置中保存的 API 连接，动态生成本局内容。",
+    "Uses your saved API connection to create fresh dialogue for this round.",
+  ],
+  setupConfigureAI: ["去设置 AI 连接 →", "Set up an AI connection →"],
   appTitle: [
     "吵架练习器 · 虚构搭档，开心过招",
     "Boundary Lab · Playful banter, original characters",
@@ -19,7 +53,7 @@ const UI = {
     "只写性格与表达特点，不指定真人或影视角色，不照搬名台词。",
     "Describe traits, not real people or franchise characters. Keep the lines original.",
   ],
-  adjustStyle: ["调整人设与技能 →", "Persona & skill options →"],
+  adjustStyle: ["调整自定义玩法 →", "Customize your game →"],
   styleLabTitle: ["回怼实验室", "Comeback lab"],
   personaTitle: ["再加一点性格（可选）", "Add your own twist (optional)"],
   personaPlaceholder: [
@@ -78,8 +112,8 @@ const UI = {
     "AI is unavailable. Here’s a preset example instead:",
   ],
   engineTitle: ["这局怎么开？", "How do you want to play?"],
-  engineLocal: ["预置 · 离线", "Offline presets"],
-  engineAI: ["AI · 动态", "AI-generated"],
+  engineLocal: ["本地对手 · 直接玩", "Offline · Ready to play"],
+  engineAI: ["AI 对手 · 需配置", "AI · Connection required"],
   engineMissing: [
     "AI 模式还需在设置填写地址、Key 和模型，本局先用预置内容。",
     "Enter a URL, key and model in Settings to use AI. This session uses presets.",
@@ -179,31 +213,31 @@ const UI = {
     "角色和情境均为虚构娱乐设定。台词不代表真人言论，评分只是游戏提示，不是现实沟通能力评估。",
     "Characters and situations are fictional entertainment. Lines are not quotes from real people, and scores are game cues, not an assessment of your communication skills.",
   ],
-  practiceEyebrow: ["你的搭档，你的玩法", "YOUR PARTNER. YOUR KIND OF BANTER."],
-  practiceTitle: ["这一局，你想怎么接？", "Make this round your own"],
+  practiceEyebrow: ["选个场景，就能开始", "PICK A SITUATION. YOU’RE READY."],
+  practiceTitle: ["两步选好，直接开练", "Pick a situation. Hit start."],
   practiceDescription: [
-    "选场景、角色和难度，再加一点嘴辣。也可以先试一句示范，娱乐过招，不必句句争赢。",
-    "Choose a situation, a fictional personality, and a difficulty. Add a little spice, or try a sample line first. The point is to have fun, not win every exchange.",
+    "默认选项已准备好，选个场景就能开始。进入对话后输入回应，就像聊天一样。",
+    "Pick a situation and start with the defaults. Then type a reply, just like a chat.",
   ],
   chooseOpponent: ["选择场景", "Choose a situation"],
-  difficulty: ["练习强度", "Choose your pace"],
+  difficulty: ["难度", "Difficulty"],
   easy: ["轻松", "Easy"],
   normal: ["常规", "Normal"],
   hard: ["挑战", "Challenge"],
   easyRounds: ["4 回合", "4 rounds"],
   normalRounds: ["6 回合", "6 rounds"],
   hardRounds: ["8 回合", "8 rounds"],
-  boundaryTitle: ["先说清你的边界", "Set an opening boundary"],
+  boundaryTitle: ["开场白（可选）", "Your opening line (optional)"],
   optional: ["可选", "Optional"],
   boundaryHint: [
-    "这句话会作为你的开场。也可以留空，在对话中慢慢练习。",
-    "This will be your opening response. Leave it blank if you’d rather find your words during the conversation.",
+    "留空即可开始；填写后会作为你的第一句回应。",
+    "Leave this blank to start normally, or use it as your first response.",
   ],
   boundaryPlaceholder: [
     "例如：我愿意讨论问题，但不接受人身评价。",
     "For example: I’ll discuss the issue, but personal attacks aren’t acceptable.",
   ],
-  beginPractice: ["开始这局练习", "Let’s play"],
+  beginPractice: ["开始练习", "Start practice"],
   practiceTip: [
     "过程中可以随时查看心法或结束复盘",
     "Check the toolkit or end for a review at any time",

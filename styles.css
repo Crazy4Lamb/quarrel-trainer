@@ -2171,6 +2171,380 @@ svg .radar-grid {
     padding: 10px;
   }
 }
+/* Simple setup: a visible start action, two short steps, optional customization. */
+.home-stat {
+  display: block;
+  padding: 0 22px;
+  min-width: 0;
+}
+.home-stat strong {
+  display: block;
+  font-size: 22px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.home-stat > span {
+  font-size: 12px;
+  color: var(--ink2);
+  margin-top: 5px;
+}
+.home-stats {
+  padding: 18px 0;
+  margin-bottom: 30px;
+}
+#view-setup {
+  max-width: 980px;
+  margin-inline: auto;
+}
+#view-setup > .page-description {
+  max-width: none;
+  margin-bottom: 16px;
+}
+.setup-launch {
+  position: sticky;
+  top: 12px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 16px 20px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 6px 22px #1813320c;
+  margin: 18px 0 24px;
+}
+.setup-launch-copy {
+  flex: 1;
+  min-width: 0;
+}
+.setup-ready {
+  font-size: 11px;
+  color: var(--ink2);
+}
+#setup-summary {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
+  margin: 3px 0;
+  overflow-wrap: anywhere;
+}
+.setup-launch .btn {
+  width: auto;
+  min-width: 160px;
+  margin: 0;
+  font-size: 14px;
+  min-height: 48px;
+}
+.setup-launch .practice-mode {
+  margin: 4px 0 0;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+.setup-step {
+  padding: 24px;
+  box-shadow: none;
+}
+.setup-step-heading {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  margin-bottom: 19px;
+}
+.setup-step-heading > .step-number {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.setup-step-heading h2 {
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+.setup-step-heading p {
+  font-size: 12px;
+  color: var(--ink2);
+  margin-top: 4px;
+}
+#view-setup .scene-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+#view-setup .scene {
+  padding: 14px 12px;
+  box-shadow: none;
+  background: var(--bg);
+}
+#view-setup .scene:hover {
+  border-color: var(--grid);
+}
+#view-setup .scene.sel {
+  border-color: var(--red);
+  background: var(--accent-soft);
+}
+#view-setup .scene.sel:hover {
+  border-color: var(--red);
+}
+#view-setup .scene .em {
+  width: 32px;
+  height: 32px;
+  font-size: 21px;
+  margin-bottom: 9px;
+}
+#view-setup .scene .nm {
+  font-size: 12px;
+}
+#view-setup .scene .tp {
+  font-size: 10px;
+  line-height: 1.6;
+}
+.selected-scene-description {
+  font-size: 12px;
+  color: var(--ink2);
+  background: var(--bg);
+  border-radius: 9px;
+  padding: 11px 13px;
+  line-height: 1.8;
+  margin-top: 14px;
+}
+.setup-flavors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.setup-flavors fieldset {
+  border: 0;
+  min-inline-size: 0;
+}
+.setup-flavors legend {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.setup-flavors .seg {
+  margin: 0;
+  min-height: 83px;
+}
+.setup-flavors .spice-options {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+.setup-flavors .spice-options button {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 5px;
+  padding: 12px 10px;
+  min-height: 83px;
+}
+.setup-flavors .spice-options small {
+  font-size: 10px;
+  line-height: 1.6;
+}
+.setup-step > .hint {
+  margin-top: 14px;
+  margin-bottom: 0;
+}
+.setup-customize-link {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 3px;
+}
+.setup-customize-link > span {
+  font-size: 11px;
+  color: var(--ink2);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.setup-customize-link .text-button {
+  font-size: 11px;
+  color: var(--red-deep);
+  flex-shrink: 0;
+}
+.style-lab {
+  margin-top: 0;
+  box-shadow: none;
+}
+.customize-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  cursor: pointer;
+  list-style: none;
+}
+.customize-heading::-webkit-details-marker {
+  display: none;
+}
+.customize-heading strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+}
+.customize-heading small {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--ink2);
+}
+.customize-toggle {
+  font-size: 0;
+  color: var(--red-deep);
+}
+.customize-toggle::after {
+  content: "+";
+  font-size: 24px;
+}
+details[open] > .customize-heading .customize-toggle::after {
+  content: "−";
+}
+.customize-content {
+  margin-top: 20px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.setup-engine {
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+.setup-boundary {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.setup-boundary > .fl {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+}
+#setup-customize {
+  scroll-margin-top: 135px;
+}
+@media (max-width: 1100px) {
+  #view-setup .scene-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .setup-flavors {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+@media (max-width: 600px) {
+  .home-stat {
+    padding: 0 10px;
+  }
+  .home-stat strong {
+    font-size: 14px;
+  }
+  .home-stat > span {
+    font-size: 10px;
+  }
+  .setup-launch {
+    top: 8px;
+    padding: 13px 14px;
+    gap: 12px;
+    margin: 16px 0 20px;
+  }
+  .setup-launch .btn {
+    min-width: 100px;
+    min-height: 46px;
+    padding: 10px 13px;
+    font-size: 13px;
+  }
+  .setup-launch .btn > span:last-child {
+    display: none;
+  }
+  .setup-ready {
+    font-size: 10px;
+  }
+  #setup-summary {
+    font-size: 12px;
+  }
+  .setup-launch .practice-mode {
+    font-size: 9px;
+  }
+  .setup-step {
+    padding: 18px 16px;
+  }
+  .setup-step-heading {
+    gap: 9px;
+    margin-bottom: 15px;
+  }
+  .setup-step-heading h2 {
+    font-size: 15px;
+  }
+  .setup-step-heading p {
+    font-size: 11px;
+  }
+  #view-setup .scene-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  #view-setup .scene {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 8px;
+    align-items: center;
+    padding: 12px 9px;
+    min-height: 62px;
+  }
+  #view-setup .scene .em {
+    width: 28px;
+    height: 28px;
+    font-size: 19px;
+    margin: 0;
+  }
+  #view-setup .scene .nm {
+    font-size: 11px;
+    text-align: start;
+  }
+  #view-setup .scene .tp {
+    display: none;
+  }
+  #view-setup .scene.sel::after {
+    top: 3px;
+    right: 6px;
+    font-size: 9px;
+  }
+  .selected-scene-description {
+    font-size: 11px;
+    padding: 10px;
+    margin-top: 12px;
+  }
+  .setup-flavors .spice-options button {
+    padding: 10px 8px;
+    min-height: 88px;
+  }
+  .setup-flavors .spice-options strong {
+    font-size: 11px;
+  }
+  .setup-flavors .spice-options small {
+    font-size: 9px;
+  }
+  .customize-heading strong {
+    font-size: 13px;
+  }
+  .customize-heading small {
+    font-size: 10px;
+  }
+  .setup-customize-link {
+    align-items: flex-start;
+  }
+  .setup-customize-link > span,
+  .setup-customize-link .text-button {
+    font-size: 10px;
+  }
+  .style-lab {
+    padding: 17px 16px;
+  }
+  #setup-customize {
+    scroll-margin-top: 145px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

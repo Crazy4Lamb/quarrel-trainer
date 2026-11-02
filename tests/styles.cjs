@@ -27,6 +27,7 @@ const app = pathToFileURL(path.join(root, "index.html")).href;
     });
     await page.goto(app);
     await page.click("#btn-home-start");
+    await page.click("#btn-style-options");
     await page.selectOption("#skill-select", "comic");
     await page.click('#spice-seg [data-spice="2"]');
     assert.equal(
@@ -119,6 +120,7 @@ const app = pathToFileURL(path.join(root, "index.html")).href;
     await page.fill("#persona-input", "原创冷幽默，短句反问");
     await page.reload();
     await page.click("#btn-home-start");
+    await page.click("#btn-style-options");
     assert.match(
       await page.locator("#persona-input").inputValue(),
       /原创冷幽默/,

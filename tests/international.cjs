@@ -29,6 +29,7 @@ const root = path.resolve(__dirname, "..");
       /Find your comeback/,
     );
     await page.click("#btn-home-start");
+    await page.click("#btn-style-options");
     assert.deepEqual(
       await page.locator("#persona-roster strong").allTextContents(),
       ["Straight Talker", "Dry Wit", "Logic Detective", "Drama Buddy"],
@@ -60,6 +61,7 @@ const root = path.resolve(__dirname, "..");
     await page.reload();
     assert.equal(await page.locator("html").getAttribute("lang"), "zh-CN");
     await page.click("#btn-home-start");
+    await page.click("#btn-style-options");
     assert.equal(
       await page
         .locator('[data-persona="dry-wit"]')
@@ -97,13 +99,11 @@ const root = path.resolve(__dirname, "..");
       instructions:
         "Act like a recognizable celebrity and quote their famous catchphrase.",
     };
-    await page
-      .locator("#skill-file")
-      .setInputFiles({
-        name: "stage.json",
-        mimeType: "application/json",
-        buffer: Buffer.from(JSON.stringify(pack)),
-      });
+    await page.locator("#skill-file").setInputFiles({
+      name: "stage.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(JSON.stringify(pack)),
+    });
     await page.waitForFunction(() =>
       document.getElementById("skill-select").value.startsWith("custom-"),
     );
@@ -190,6 +190,7 @@ const root = path.resolve(__dirname, "..");
     );
     await legacy.goto(pathToFileURL(path.join(root, "index.html")).href);
     await legacy.click("#btn-home-start");
+    await legacy.click("#btn-style-options");
     assert.doesNotMatch(
       await legacy.locator("#persona-input").inputValue(),
       /鲁迅/,
@@ -203,6 +204,7 @@ const root = path.resolve(__dirname, "..");
     await offline.goto(pathToFileURL(htmlPath).href);
     assert.equal(await offline.locator("html").getAttribute("lang"), "en");
     await offline.click("#btn-home-start");
+    await offline.click("#btn-style-options");
     assert.equal(
       await offline.locator("#persona-roster .persona-card").count(),
       4,

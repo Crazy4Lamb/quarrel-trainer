@@ -360,6 +360,7 @@ function renderStyleControls() {
     !skill.id.startsWith("custom-");
   document.getElementById("style-summary").textContent =
     skillText(character.name) + " · " + skillText(skill.name);
+  renderSetupSummary();
   if (skillFeedback)
     document.getElementById("skill-feedback").textContent = t(
       skillFeedback.key,
@@ -579,9 +580,9 @@ function initializeStyleControls() {
     .getElementById("example-input")
     .addEventListener("input", invalidateExample);
   document.getElementById("btn-style-options").onclick = () => {
-    document
-      .querySelector(".style-lab")
-      .scrollIntoView({ behavior: "smooth", block: "start" });
-    document.getElementById("persona-input").focus({ preventScroll: true });
+    const panel = document.getElementById("setup-customize");
+    panel.open = true;
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    panel.querySelector("summary").focus({ preventScroll: true });
   };
 }

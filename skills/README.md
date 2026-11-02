@@ -1,6 +1,6 @@
 # 应用内风格技能 / In-app style skills
 
-在「开始练习 → 回怼实验室」导入 JSON、Markdown 或纯文本文件。也可以直接选择四个内置技能：本色应战、冷面辩手、脱口秀嘴替、市井直球。
+在「开始练习 → 自定义玩法」导入 JSON、Markdown 或纯文本文件。也可以直接选择四个内置技能：本色应战、冷面辩手、脱口秀嘴替、市井直球。
 
 这些是本应用的风格与提示词数据包。应用读取文字规则和预置台词，不执行插件代码，也不会加载 Markdown 中引用的其他文件。
 
@@ -53,7 +53,7 @@ Markdown 本身不包含离线台词，因此需要 AI 才能按照文字规则�
 
 ## English
 
-Import a JSON, Markdown or text skill in Practice → Comeback lab. These are in-app style/data packs, not executable extensions. Referenced supporting files are not loaded.
+Import a JSON, Markdown or text skill in Play → Customize your game. These are in-app style/data packs, not executable extensions. Referenced supporting files are not loaded.
 
 Characters are original fictional archetypes. Describe general traits and delivery techniques, not real people or franchise characters. Do not request recognizable catchphrases or imply endorsement. Import only content you created or have permission to use. Shared originality rules apply to examples, openings and replies, but they do not automatically verify rights.
 

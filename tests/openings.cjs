@@ -207,6 +207,7 @@ async function idle(page) {
 }
 async function start(page, wait = true) {
   await page.click("nav button[data-v=setup]");
+  await page.click("#btn-style-options");
   await page.fill("#boundary-input", "");
   await page.click("#btn-start");
   assert.equal(

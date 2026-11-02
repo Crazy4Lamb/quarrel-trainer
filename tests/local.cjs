@@ -114,6 +114,7 @@ const { build } = require("../scripts/build-local.cjs");
       process.platform === "win32"
         ? path.join(path.dirname(appPath), "Example-skill.json")
         : path.resolve(__dirname, "../skills/reviewer.json");
+    await page.click("#btn-style-options");
     await page.locator("#skill-file").setInputFiles(skillPath);
     await page.waitForFunction(() =>
       document.getElementById("skill-select").value.startsWith("custom-"),

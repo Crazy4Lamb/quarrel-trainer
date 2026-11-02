@@ -187,6 +187,7 @@ const root = path.resolve(__dirname, "..");
     );
     assert.equal(requests[0].url, "https://mock.test/v1/chat/completions");
     await page.click("nav button[data-v=setup]");
+    await page.click("#btn-style-options");
     await page.fill("#boundary-input", "Personal attacks are not acceptable.");
     await page.click("#btn-start");
     await idle(page);
@@ -414,6 +415,7 @@ async function send(page, text) {
 }
 async function freshBattle(page) {
   await page.click("nav button[data-v=setup]");
+  await page.click("#btn-style-options");
   await page.fill("#boundary-input", "");
   await page.click("#btn-start");
   assert.equal(

@@ -60,8 +60,10 @@ Open http://localhost:8080.
 
 ## Workflow
 
-1. Choose a language, opponent, difficulty and optional boundary settings.
-2. Start the session: a complete AI configuration generates its situation first; local mode starts from presets. You may switch to a local opponent while waiting.
+Home counts show completed sessions, available scenarios and techniques. The setup page shows two short steps with a start action that stays visible while scrolling. Characters, skills, AI and opening text are in the optional, initially collapsed Customize your game section.
+
+1. Pick a situation. First-time players can keep Normal + Clean.
+2. Select Start practice at the top, then type a response as you would in a chat. Expand Customize your game only if you want characters, skills, AI or an opening line.
 3. Type responses and continue the conversation within this session’s situation.
 4. Review scores, highlighted responses and coaching feedback.
 5. Customize your profile and recurring difficulties for targeted strategies.
@@ -78,7 +80,7 @@ This design reduces reliance on existing identities and material; it does not ve
 
 ## Personas, skills and spice
 
-Open Play → Comeback lab to choose Straight Talker, Dry Wit, Logic Detective or Drama Buddy. Add personality notes and try a sample line. Choose a built-in skill or import JSON/Markdown. See [the skill format](skills/README.md) and [the bilingual example](skills/reviewer.json). Skill files provide text/data; they do not execute code.
+Open Play → Customize your game to choose Straight Talker, Dry Wit, Logic Detective or Drama Buddy. Add personality notes and try a sample line. Choose a built-in skill or import JSON/Markdown. See [the skill format](skills/README.md) and [the bilingual example](skills/reviewer.json). Skill files provide text/data; they do not execute code.
 
 Difficulty changes rounds and opponent pressure; spice changes wording. Offline mode combines skill presets with clean, sarcastic or coarse delivery. AI mode uses your persona, skill, spice level and session situation. Custom persona directions and instruction-only Markdown skills require AI to generate new dialogue; skills without offline lines for the current language visibly fall back to default presets. Changing options applies to future sessions; the current session keeps its initial settings.
 
@@ -118,7 +120,7 @@ Click Start Game (开始游戏), or Practice (开始练习) in the navigation. O
 | Normal / 常规    | 6      | Sustained conversation and questioning        |
 | Challenge / 挑战 | 8      | Maintain boundaries against stronger pressure |
 
-Optionally enter an opening boundary in Set an opening boundary (先说清你的边界), such as “We can discuss responsibility, but first specify the facts.” You can leave it empty.
+Expand Customize your game to optionally enter an opening boundary in Your opening line, such as “We can discuss responsibility, but first specify the facts.” You can leave it empty.
 
 ### 2. Respond and read feedback
 
@@ -131,3 +133,5 @@ Type a response and click the up-arrow button (or press Enter on desktop; Shift 
 Finish the rounds or click End & review (结束并复盘) to see scores, highlights and coaching feedback. History (练习记录) shows past sessions; Profile (我的档案) configures your profile and weak points. AI errors or timeouts fall back to local opponents for the rest of the session; you can also switch manually while waiting. Try the local engine first, then optionally configure AI in 设置. These screenshots use local rule mode.
 
 Run `node tests/international.cjs` to check browser-language defaults, translated character selection, generation constraints, responsive layouts and the English offline bundle.
+
+Run `node tests/setup.cjs` to verify readable counts, collapsed optional controls, default start, live selection summaries, a visible start button at all widths and the same flow in the portable bundle.
