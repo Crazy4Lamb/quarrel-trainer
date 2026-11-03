@@ -112,7 +112,7 @@ python -m http.server 8080
 
 ## 项目结构与开发
 
-index.html 是页面入口，styles.css 管理布局与主题，i18n.js 保存中英文界面与练习数据，skills.js 管理原创虚构角色、风格技能和生成约束，app.js 管理对练、AI 和存储。pwa.js 提供安装与离线状态，manifest*.webmanifest 与 icons/ 提供主屏幕信息。service-worker.js 由 scripts/build-h5.cjs 生成，请修改 scripts/service-worker-template.js 后重新构建。
+index.html 是页面入口，styles.css 管理布局与主题，i18n.js 保存中英文界面与练习数据，skills.js 管理角色风格和练习技能，role-prompts.js 定义双方的人物设定，并为每次角色对话请求附上按发言人排列的本局记录，app.js 管理对练、AI 和存储。pwa.js 提供安装与离线状态，manifest*.webmanifest 与 icons/ 提供主屏幕信息。service-worker.js 由 scripts/build-h5.cjs 生成，请修改 scripts/service-worker-template.js 后重新构建。
 
 安装 Playwright 后运行 `node tests/browser.cjs` 进行浏览器回归验证，运行 `node tests/openings.cjs` 验证动态开局、重复重试、取消与预置回退（Windows 默认使用 Edge；其他环境可用 BROWSER_CHANNEL 指定已安装的 Chromium 浏览器）。测试使用模拟接口和假密钥。
 

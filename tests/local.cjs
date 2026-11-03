@@ -130,7 +130,7 @@ const { build } = require("../scripts/build-local.cjs");
     await page.route("https://mock.test/**", (route) => {
       const body = route.request().postDataJSON();
       const content = body.messages[0].content.includes(
-        "Generate a fresh session opening",
+        "你是虚构场景的编剧",
       )
         ? JSON.stringify({
             intro: "A changed deadline in the portable app",

@@ -172,7 +172,7 @@ const root = path.resolve(__dirname, "..");
       return route.fulfill({
         json: {
           choices: [
-            { message: { content: "Please tell me which part you mean." } },
+            { message: { content: JSON.stringify({ line: "Please tell me which part you mean." }) } },
           ],
         },
       });
@@ -191,7 +191,7 @@ const root = path.resolve(__dirname, "..");
     await page.fill("#boundary-input", "Personal attacks are not acceptable.");
     await page.click("#btn-start");
     await idle(page);
-    assert.match(requests.at(-1).body.messages[0].content, /使用英文输出/);
+    assert.match(requests.at(-1).body.messages[0].content, /用英语/);
     assert.equal(await page.locator("#chat .msg.op").count(), 2);
     console.log(
       "PASS saved AI configuration, full endpoint, boundary opening and English prompt",
@@ -280,7 +280,7 @@ const root = path.resolve(__dirname, "..");
       });
       if (fulfillGeneratedOpening(route)) return;
       return route.fulfill({
-        json: { content: [{ type: "text", text: "Let’s look at the facts." }] },
+        json: { content: [{ type: "text", text: JSON.stringify({ line: "Let’s look at the facts." }) }] },
       });
     });
     await freshBattle(page);
@@ -310,7 +310,7 @@ const root = path.resolve(__dirname, "..");
     await finalReply.fulfill({
       json: {
         content: [
-          { type: "text", text: "All right, let’s check the records." },
+          { type: "text", text: JSON.stringify({ line: "All right, let’s check the records." }) },
         ],
       },
     });
@@ -432,7 +432,7 @@ function fulfillGeneratedOpening(route) {
     body.system ||
     body.messages?.find((message) => message.role === "system")?.content ||
     "";
-  if (!system.includes("Generate a fresh session opening")) return;
+  if (!system.includes("你是虚构场景的编剧")) return;
   const content = JSON.stringify({
     intro: "A new delivery issue, session " + ++generatedSession,
     hint: "Ask for the specific record.",

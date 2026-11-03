@@ -8,6 +8,7 @@ const assets = [
   "styles.css",
   "i18n.js",
   "skills.js",
+  "role-prompts.js",
   "pwa.js",
   "app.js",
   "manifest.webmanifest",

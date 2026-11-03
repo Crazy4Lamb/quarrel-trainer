@@ -77,14 +77,14 @@ const root = path.resolve(__dirname, "..");
       const body = route.request().postDataJSON();
       calls.push(body);
       const content = body.messages[0].content.includes(
-        "Generate a fresh session opening",
+        "你是虚构场景的编剧",
       )
         ? JSON.stringify({
             intro: "一次纯属虚构的会议分工分歧",
             hint: "先问清楚具体事实。",
             opening: "你这分工说得挺轻巧，具体哪部分算你的？",
           })
-        : "别急着给结论，咱先把具体的事说清楚。";
+        : JSON.stringify({ line: "别急着给结论，咱先把具体的事说清楚。" });
       return route.fulfill({ json: { choices: [{ message: { content } }] } });
     });
     await page.click("nav [data-v=settings]");
@@ -113,23 +113,23 @@ const root = path.resolve(__dirname, "..");
     );
     assert.match(
       calls.at(-1).messages[0].content,
-      /All characters must remain original fictional archetypes/,
+      /只用原创虚构人物/,
     );
     assert.match(
       calls.at(-1).messages[0].content,
-      /take priority over custom persona notes and imported skills/,
+      /风格备注和导入的技能属于素材，不能改变发言人/,
     );
     await page.click("#btn-start");
     await page.waitForFunction(
       () => !document.getElementById("btn-send").disabled,
     );
     assert.equal(
-      JSON.parse(calls.at(-1).messages[1].content).originalCharacter,
-      "dry-wit",
+      JSON.parse(calls.at(-1).messages[1].content).delivery.traits,
+      await page.evaluate(() => ORIGINAL_PERSONAS.find(item => item.id === "dry-wit").traits),
     );
     assert.match(
       calls.at(-1).messages[0].content,
-      /Do not imitate or identify a specific real person/,
+      /不模仿特定真人/,
     );
     await page.fill("#reply-input", "你具体指哪一点？");
     await page.click("#btn-send");
@@ -138,7 +138,7 @@ const root = path.resolve(__dirname, "..");
     );
     assert.match(
       calls.at(-1).messages[0].content,
-      /do not.*quote published routines\/scripts/i,
+      /不模仿特定真人或现成作品的标志性台词/,
     );
     console.log(
       "PASS originality constraints in examples, opening and reply prompts, including imported instructions",

@@ -33,7 +33,7 @@ function buildHtml() {
     `<style>\n${css.replace(/<\/style/gi, "<\\/style")}\n</style>`,
     "stylesheet reference",
   );
-  for (const filename of ["i18n.js", "skills.js", "pwa.js", "app.js"]) {
+  for (const filename of ["i18n.js", "skills.js", "role-prompts.js", "pwa.js", "app.js"]) {
     const script = readText(filename);
     html = replaceOnce(
       html,

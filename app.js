@@ -617,6 +617,7 @@ function renderSetup() {
   grid.querySelectorAll(".scene").forEach(
     (el) =>
       (el.onclick = () => {
+        invalidateExample();
         selScene = el.dataset.id;
         renderSetup();
         grid
@@ -904,7 +905,6 @@ async function startBattle() {
     over: false,
     boundaryFirst: !!boundary,
     chatLog: [],
-    llmMsgs: null,
     busy: false,
     request: null,
     language,
@@ -950,10 +950,6 @@ async function startBattle() {
         open: [generated.opening],
       };
       rememberOpening(currentBattle, generated);
-      currentBattle.llmMsgs = [
-        { role: "system", content: buildOpponentSystem(false, null) },
-        { role: "assistant", content: generated.opening },
-      ];
     } catch (e) {
       if (battle !== currentBattle || currentBattle.over) return;
       currentBattle.engine = "local";
@@ -978,7 +974,7 @@ async function startBattle() {
   const openingLine = pick(battle.scene.open, battle.used.open);
   addMsg(
     "op",
-    battle.llmMsgs ? openingLine : localStyledLine(openingLine, "opening"),
+    battle.engine === "ai" ? openingLine : localStyledLine(openingLine, "opening"),
   );
   if (
     battle.skill.id !== "standard" ||
@@ -995,7 +991,7 @@ async function startBattle() {
       }),
     );
   }
-  if (battle.llmMsgs) {
+  if (battle.engine === "ai") {
     addMsg("sys", t("aiEnabled", { model: getSettings().model }));
   }
   if (boundary) {
@@ -1020,37 +1016,10 @@ async function generateOpening(currentBattle, boundary, signal) {
   const previous = recentOpenings(currentBattle.scene.id);
   const fingerprint = (line) =>
     line.toLowerCase().replace(/[\s\p{P}\p{S}]/gu, "");
-  const sessionId =
-    globalThis.crypto?.randomUUID?.() || Date.now() + "-" + Math.random();
-  const messages = [
-    {
-      role: "system",
-      content: `Generate a fresh session opening for a communication practice game.
-Return ONLY a JSON object with three string fields: "intro" (a concrete new situation), "hint" (one practical communication tip for the learner), and "opening" (the opponent's first spoken line, 1–2 sentences).
-Keep the chosen opponent's identity and style, but vary the specific incident, stakes, details, and wording. Do not copy the reference situation or repeat a previous opening. Use realistic disagreement without slurs or extreme threats.
-Write all three fields in ${currentBattle.language === "en" ? "English" : "Simplified Chinese"}. Keep intro and hint under 70 words each and opening under 50 words. No Markdown, narration in the opening, or extra fields.
-${stylePrompt(currentBattle.options, currentBattle.skill)}`,
-    },
-    {
-      role: "user",
-      content: JSON.stringify({
-        sessionId,
-        opponent: currentBattle.scene.name,
-        style: currentBattle.scene.type,
-        referenceSituation: currentBattle.scene.intro,
-        difficulty: currentBattle.diff.name,
-        originalCharacter: originalPersona(currentBattle.options).id,
-        styleNotes: currentBattle.options.persona,
-        skill: skillText(currentBattle.skill.name),
-        spiceLevel: currentBattle.options.spice,
-        openingBoundary: boundary || undefined,
-        avoidRepeating: previous.map(({ intro, opening }) => ({
-          intro,
-          opening,
-        })),
-      }),
-    },
-  ];
+  const details = {
+    difficulty: currentBattle.diff.name,
+    preparedPlayerOpening: boundary,
+  };
   // Bound the entire generation phase, including a single retry for malformed/repeated output.
   const ctrl = new AbortController();
   const abort = () => ctrl.abort();
@@ -1059,24 +1028,10 @@ ${stylePrompt(currentBattle.options, currentBattle.skill)}`,
   const timer = setTimeout(abort, 15000);
   try {
     for (let attempt = 0; attempt < 2; attempt++) {
+      const messages = dialogueMessages("opening", currentBattle, currentBattle.language, details);
       const output = await callLLM(messages, 0.95, ctrl.signal, 700);
       try {
-        const data = JSON.parse(
-          output
-            .trim()
-            .replace(/^```(?:json)?\s*/i, "")
-            .replace(/\s*```$/, ""),
-        );
-        if (
-          !data ||
-          !["intro", "hint", "opening"].every(
-            (key) =>
-              typeof data[key] === "string" &&
-              data[key].trim() &&
-              data[key].length <= 1000,
-          )
-        )
-          throw new Error(t("invalidOpening"));
+        const data = readDialogueFields(output, ["intro", "hint", "opening"]);
         const opening = data.opening.trim();
         if (
           previous.some(
@@ -1091,14 +1046,10 @@ ${stylePrompt(currentBattle.options, currentBattle.skill)}`,
         return { intro: data.intro.trim(), hint: data.hint.trim(), opening };
       } catch (e) {
         if (attempt || ctrl.signal.aborted) throw e;
-        messages.push(
-          { role: "assistant", content: output },
-          {
-            role: "user",
-            content:
-              "The output was invalid or repeated a previous opening. Generate a different situation and opening, using exactly the JSON schema above.",
-          },
-        );
+        details.retry = {
+          rejectedDraft: output,
+          reason: "格式错误或与近期台词重复。请换一件事，按规定格式重新写开场。",
+        };
       }
     }
   } finally {
@@ -1153,8 +1104,13 @@ function addMsg(who, text, tags) {
     div.querySelector(".bubble").textContent = text;
   }
   chat.appendChild(div);
-  if (battle && battle.chatLog && (who === "op" || who === "me"))
-    battle.chatLog.push({ who, text });
+  if (battle && (who === "op" || who === "me")) {
+    battle.chatLog.push({
+      seq: battle.chatLog.length + 1,
+      speaker: who === "op" ? "npc" : "player",
+      text,
+    });
+  }
   if (document.getElementById("view-battle").classList.contains("active")) {
     chat.scrollIntoView({ block: "end", behavior: "smooth" });
     window.scrollTo(0, document.body.scrollHeight);
@@ -1185,71 +1141,37 @@ function setBusy(b) {
 }
 
 function useLocalOpponent() {
-  if (battle) battle.engine = "local";
-  if (battle?.initializing) {
-    battle.initializing = false;
-    battle.request?.abort();
-    return;
-  }
-  if (!battle || !battle.llmMsgs) return;
-  battle.llmMsgs = null;
-  if (battle.request) battle.request.abort();
+  if (!battle) return;
+  battle.engine = "local";
+  battle.initializing = false;
+  battle.request?.abort();
 }
 document.getElementById("btn-local-opponent").onclick = useLocalOpponent;
 
 /* ---- LLM 对手 prompt ---- */
-function buildOpponentSystem(collapse, ev) {
-  const sc = battle.scene;
-  let react = "";
-  if (ev) {
-    const parts = [];
-    if (ev.tactics && ev.tactics.length)
-      parts.push("对方刚使出了" + ev.tactics.join("、") + "，招式凌厉");
-    if (ev.boundary) parts.push("对方刚亮明了边界");
-    if (ev.selfVerify) parts.push("对方刚才在自证辩解");
-    if (ev.led) parts.push("对方刚才被你带节奏了");
-    if (ev.mad) parts.push("对方刚才情绪上头骂人了");
-    if (ev.apolo) parts.push("对方刚才在道歉");
-    react = parts.length
-      ? "系统判定：" + parts.join("；") + "。"
-      : "系统判定：对方这轮平淡接招，没出招。";
-  }
-  const p = battle.pressure.toFixed(1);
-  return `你在「吵架练习器」应用中扮演吵架对手，陪用户实战练习吵架。用户知道这是练习，你只管把架吵真、吵活。
-
-# 角色设定
-- 场景：${sc.name}（${sc.type}）
-- 背景：${sc.intro}
-- 你的软肋：${sc.soft}
-- 台词风格参考（学习语气，不要照抄）：${sc.attack.join("｜")}
-
-# 当前状态
-- 难度：${battle.diff.name}；本局共 ${battle.maxRounds} 回合。高难度时更坚持自己的立场，低难度时更容易接受澄清。
-- 你的气焰值：${p} / 10（10=极其嚣张进逼；≤${battle.diff.retreat}=你已经撑不住了）
-${react}
-
-# 表演规则
-1. 每轮只说 1~2 句，口语化，贴合人设；只输出台词本身，不要旁白、引号、动作描写、心理活动。
-2. 气焰值高（>6）就嚣张进攻；中等（3~6）被对方问住时要动摇、找补、心虚，但还嘴硬；${collapse ? "现在气焰值已跌破阈值：你必须认怂收场——找台阶、转移话题、偃旗息鼓，只说一句认怂台词。" : "系统判定对方招式凌厉时，你要演出被问住、逻辑动摇的样子。"}
-3. 对方自证、被你带节奏，你得寸进尺；措辞遵循下方选择的风格和粗俗程度。
-4. 使用${battle.language === "en" ? "英文" : "中文"}输出。不输出身份歧视、性羞辱或暴力威胁。
-${stylePrompt(battle.options, battle.skill)}`;
-}
-
 async function llmOpponentReply(collapse, ev, currentBattle) {
-  currentBattle.llmMsgs[0].content = buildOpponentSystem(collapse, ev);
+  const messages = dialogueMessages("opponent", currentBattle, currentBattle.language, {
+    difficulty: currentBattle.diff.name,
+    round: currentBattle.turn,
+    roundLimit: currentBattle.maxRounds,
+    pressureOutOfTen: currentBattle.pressure,
+    closeThisTurn: collapse,
+    observations: {
+      tactics: ev.tactics, statedBoundary: ev.boundary, selfJustification: ev.selfVerify,
+      followedDiversion: ev.led, raisedTone: ev.mad, apologized: ev.apolo,
+    },
+  });
   const ctrl = new AbortController();
   currentBattle.request = ctrl;
   try {
     const out = await callLLM(
-      currentBattle.llmMsgs,
+      messages,
       collapse ? 0.6 : 0.95,
       ctrl.signal,
       400,
     );
-    if (out && currentBattle.llmMsgs)
-      currentBattle.llmMsgs.push({ role: "assistant", content: out });
-    return out;
+    const { line } = readDialogueFields(out, ["line"]);
+    return line;
   } finally {
     if (currentBattle.request === ctrl) currentBattle.request = null;
   }
@@ -1261,16 +1183,15 @@ async function opponentTurn(ev) {
   const currentBattle = battle;
   const s = battle.scene,
     u = battle.used;
-  const useLLM = !!battle.llmMsgs;
+  const useLLM = currentBattle.engine === "ai";
   if (battle.pressure <= battle.diff.retreat) {
     let line = localStyledLine(pick(s.collapse, u.collapse), "reply");
     if (useLLM) {
       setBusy(true);
       try {
         const ll = await llmOpponentReply(true, ev, currentBattle);
-        if (ll && currentBattle.llmMsgs) line = ll;
+        if (ll && currentBattle.engine === "ai") line = ll;
       } catch (e) {
-        currentBattle.llmMsgs = null;
         currentBattle.engine = "local";
       }
       if (battle !== currentBattle || currentBattle.over) return;
@@ -1288,8 +1209,7 @@ async function opponentTurn(ev) {
       line = await llmOpponentReply(false, ev, currentBattle);
     } catch (e) {
       if (battle !== currentBattle || currentBattle.over) return;
-      const switched = !currentBattle.llmMsgs;
-      currentBattle.llmMsgs = null;
+      const switched = currentBattle.engine === "local";
       currentBattle.engine = "local";
       addMsg(
         "sys",
@@ -1297,7 +1217,7 @@ async function opponentTurn(ev) {
       );
     }
     if (battle !== currentBattle || currentBattle.over) return;
-    if (!currentBattle.llmMsgs) line = null;
+    if (currentBattle.engine === "local") line = null;
     setBusy(false);
   }
   if (line) {
@@ -1339,7 +1259,6 @@ function handleUserTurn(text, isBoundary) {
     battle.bestLine = text;
   }
   battle.pressure = clamp(battle.pressure + ev.dP, 0, 10);
-  if (battle.llmMsgs) battle.llmMsgs.push({ role: "user", content: text });
   addMsg("me", text, ev.tags);
   battle.turn++;
   updateHUD();
@@ -1715,14 +1634,14 @@ async function maybeLLMReview(rec) {
   if (
     !box ||
     !hasLLM() ||
-    !battle?.chatLog?.length ||
+    !battle?.chatLog.some(message => message.speaker === "player") ||
     battle.engine === "local"
   )
     return;
   const snapshot = battle;
   // A language switch may redraw this review; reuse completed results and guard stale writes.
-  if (snapshot.review?.language === language && snapshot.review.text) {
-    box.innerHTML = reviewHtml(snapshot.review.text);
+  if (snapshot.review?.language === language && snapshot.review.fields) {
+    box.innerHTML = reviewHtml(snapshot.review.fields);
     return;
   }
   if (snapshot.reviewRequest) snapshot.reviewRequest.abort();
@@ -1731,30 +1650,20 @@ async function maybeLLMReview(rec) {
   box.innerHTML = `<div class="card"><h2 class="sec">${t("aiReview")}</h2><p class="hint">${t("aiReviewBusy")}</p></div>`;
   const reviewLanguage = language;
   try {
-    const transcript = snapshot.chatLog
-      .map((m) => (m.who === "op" ? "Opponent: " : "Learner: ") + m.text)
-      .join("\n");
-    const sys =
-      "You are a communication coach. Focus on clarity, facts, calm responses and healthy boundaries. Do not encourage hostility. Reply in " +
-      (reviewLanguage === "en" ? "English" : "Simplified Chinese") +
-      ".";
-    const prompt =
-      "Review this practice session. Scores from a local rule engine: " +
-      JSON.stringify(rec.scores) +
-      ". Give one thing that worked, one improvement with a sample response, and a small next step. Use plain language, about 150 words or 200 Chinese characters, without Markdown. Transcript:\n" +
-      transcript;
-    const out = await callLLM(
-      [
-        { role: "system", content: sys },
-        { role: "user", content: prompt },
-      ],
-      0.7,
-      ctrl.signal,
-      1000,
+    const messages = dialogueMessages("review", snapshot, reviewLanguage, {
+      localScoresOutOfTen: {
+        confidence: rec.scores.q, clarity: rec.scores.l, boundaries: rec.scores.b,
+      },
+    });
+    const output = await callLLM(messages, 0.55, ctrl.signal, 1000);
+    const fields = readDialogueFields(output, ["quote", "worked", "improve", "rewrite", "nextStep"]);
+    const quotedPlayer = snapshot.chatLog.some(message =>
+      message.speaker === "player" && message.text.includes(fields.quote)
     );
-    snapshot.review = { language: reviewLanguage, text: out };
-    if (box.isConnected && battle === snapshot && language === reviewLanguage)
-      box.innerHTML = reviewHtml(out);
+    if (!quotedPlayer) throw new Error(t("invalidResponse"));
+    if (ctrl.signal.aborted || battle !== snapshot || language !== reviewLanguage) return;
+    snapshot.review = { language: reviewLanguage, fields };
+    if (box.isConnected) box.innerHTML = reviewHtml(fields);
   } catch (e) {
     if (!ctrl.signal.aborted && box.isConnected && battle === snapshot)
       box.innerHTML = `<div class="card"><h2 class="sec">${t("aiReview")}</h2><p class="hint">${escapeHtml(t("aiReviewFailed", { error: e.message }))}</p></div>`;
@@ -1762,8 +1671,15 @@ async function maybeLLMReview(rec) {
     if (snapshot.reviewRequest === ctrl) snapshot.reviewRequest = null;
   }
 }
-function reviewHtml(text) {
-  return `<div class="card"><h2 class="sec">${t("aiReview")}</h2><p style="white-space:pre-wrap;font-size:12px;line-height:1.9">${escapeHtml(text)}</p></div>`;
+function reviewHtml(fields) {
+  const labels = language === "zh"
+    ? ["你的原话", "回应的效果", "可以调整", "试试这样说", "下次练习"]
+    : ["Your words", "What your words did", "What to adjust", "Try saying", "Next practice"];
+  const values = [fields.quote, fields.worked, fields.improve, fields.rewrite, fields.nextStep];
+  const rows = labels.map((label, index) =>
+    '<dt><strong>' + label + '</strong></dt><dd>' + escapeHtml(values[index]) + '</dd>'
+  ).join("");
+  return '<div class="card"><h2 class="sec">' + t("aiReview") + '</h2><dl class="coach-notes">' + rows + '</dl></div>';
 }
 
 /* ---------- 设置页 ---------- */

@@ -153,6 +153,10 @@ const UI = {
   skillRemoved: ["技能已移除。", "Skill removed."],
   skillImportFailed: ["技能未加载。", "Skill was not loaded."],
   exampleTitle: ["先试一句：对方说了什么？", "Try one: what did they say?"],
+  exampleConversationHint: [
+    "在同一场景请求 AI 示范，会带上进行中这局双方的发言。留空可接着回对手的上一句，也可以输入一句假设台词。",
+    "An AI example uses both speakers’ lines from the ongoing session in this scenario. Leave the field blank to answer the last opponent line, or enter a hypothetical remark.",
+  ],
   examplePlaceholder: [
     "例如：你怎么这么矫情，开个玩笑都不行？",
     "For example: Why are you so sensitive? Can’t you take a joke?",

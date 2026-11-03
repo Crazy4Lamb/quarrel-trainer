@@ -155,15 +155,15 @@ const app = pathToFileURL(path.join(root, "index.html")).href;
       const body = route.request().postDataJSON();
       requests.push(body);
       const system = body.messages[0].content;
-      let content = system.includes("Generate a fresh session opening")
+      let content = system.includes("你是虚构场景的编剧")
         ? JSON.stringify({
             intro: "临时改需求的同事",
             hint: "先核对需求记录",
             opening: "今晚临时改的需求你得接住，别跟我讲条件。",
           })
-        : system.includes("comeback example")
-          ? "你这临时需求可真会挑下班时间，凭什么只改我的计划？"
-          : "别把流程当挡箭牌，你得把具体安排说清楚。";
+        : system.includes("可选的回应示范")
+          ? JSON.stringify({ line: "你这临时需求可真会挑下班时间，凭什么只改我的计划？" })
+          : JSON.stringify({ line: "别把流程当挡箭牌，你得把具体安排说清楚。" });
       return route.fulfill({ json: { choices: [{ message: { content } }] } });
     });
     await page.click("nav [data-v=setup]");
@@ -179,22 +179,27 @@ const app = pathToFileURL(path.join(root, "index.html")).href;
       /AI 新创作/,
     );
     const exampleRequest = requests.at(-1);
-    assert.match(exampleRequest.messages[0].content, /原创冷幽默|styleNotes/);
-    assert.match(exampleRequest.messages[0].content, /meticulous reviewer/);
-    assert.match(exampleRequest.messages[0].content, /Coarse:/);
+    assert.match(exampleRequest.messages[1].content, /原创冷幽默|styleNotes/);
+    assert.match(exampleRequest.messages[1].content, /meticulous reviewer/);
+    assert.match(exampleRequest.messages[1].content, /Coarse:/);
     assert.match(exampleRequest.messages[1].content, /今晚必须加班/);
     await page.click("#btn-start");
     await idle(page);
     const generation = requests.at(-1);
     const params = JSON.parse(generation.messages[1].content);
-    assert.equal(params.spiceLevel, 2);
+    assert.deepEqual(params.dialogue, []);
+    assert.equal(params.delivery.languageRegister.startsWith("Coarse:"), true);
     assert.equal(params.difficulty, "挑战");
-    assert.match(params.styleNotes, /原创冷幽默/);
+    assert.match(params.delivery.styleNotes, /原创冷幽默/);
     await page.fill("#reply-input", "你为什么不先确认各自的安排？");
     await page.click("#btn-send");
     await idle(page);
-    assert.match(requests.at(-1).messages[0].content, /meticulous reviewer/);
-    assert.match(requests.at(-1).messages[0].content, /Coarse:/);
+    assert.match(requests.at(-1).messages[1].content, /meticulous reviewer/);
+    assert.match(requests.at(-1).messages[1].content, /Coarse:/);
+    assert.deepEqual(JSON.parse(requests.at(-1).messages[1].content).dialogue, [
+      { seq: 1, speaker: "npc", text: "今晚临时改的需求你得接住，别跟我讲条件。" },
+      { seq: 2, speaker: "player", text: "你为什么不先确认各自的安排？" },
+    ]);
     assert.match(
       (await page.locator("#chat .op .bubble").allTextContents()).at(-1),
       /^别把流程/,

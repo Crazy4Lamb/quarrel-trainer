@@ -1,6 +1,6 @@
 /* Generated from this template by scripts/build-h5.cjs. Cache static assets only. */
-const BUILD_ID = "1f1aa07075140e9f";
-const SHELL = ["./","index.html","styles.css","i18n.js","skills.js","pwa.js","app.js","manifest.webmanifest","manifest.zh.webmanifest","icons/icon.svg","icons/icon-192.png","icons/icon-512.png","icons/apple-touch-icon.png"];
+const BUILD_ID = "6e3092d3131f8b98";
+const SHELL = ["./","index.html","styles.css","i18n.js","skills.js","role-prompts.js","pwa.js","app.js","manifest.webmanifest","manifest.zh.webmanifest","icons/icon.svg","icons/icon-192.png","icons/icon-512.png","icons/apple-touch-icon.png"];
 const CACHE_PREFIX =
   "boundary-lab:" + new URL(self.registration.scope).pathname + ":";
 const CACHE_NAME = CACHE_PREFIX + BUILD_ID;

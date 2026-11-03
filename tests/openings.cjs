@@ -54,12 +54,12 @@ const fixtures = [
     await page.route("https://mock.test/**", (route) => {
       const body = route.request().postDataJSON();
       if (
-        body.messages[0].content.includes("Generate a fresh session opening")
+        body.messages[0].content.includes("你是虚构场景的编剧")
       ) {
         generationRequests.push(body);
         return reply(route, JSON.stringify(fixtures[nextFixture++]));
       }
-      return reply(route, "那你先把具体的分工记录拿来看看。");
+      return reply(route, JSON.stringify({ line: "那你先把具体的分工记录拿来看看。" }));
     });
     await start(page);
     assert.equal(
@@ -80,11 +80,8 @@ const fixtures = [
       fixtures[1].opening,
     );
     const prompt = JSON.parse(generationRequests[1].messages[1].content);
-    assert.equal(prompt.avoidRepeating[0].opening, fixtures[0].opening);
-    assert.notEqual(
-      prompt.sessionId,
-      JSON.parse(generationRequests[0].messages[1].content).sessionId,
-    );
+    assert.deepEqual(prompt.dialogue, []);
+    assert.ok(!generationRequests[1].messages[1].content.includes(fixtures[0].opening));
     await page.click("#btn-language");
     assert.match(await page.locator("#b-tp").innerText(), /周一会议/);
     console.log(

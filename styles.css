@@ -2661,3 +2661,7 @@ details[open] > .customize-heading .customize-toggle::after {
     scroll-behavior: auto !important;
   }
 }
+
+.coach-notes { margin: 0; }
+.coach-notes dt { margin: .8rem 0 .15rem; }
+.coach-notes dd { margin: 0; line-height: 1.65; overflow-wrap: anywhere; }
